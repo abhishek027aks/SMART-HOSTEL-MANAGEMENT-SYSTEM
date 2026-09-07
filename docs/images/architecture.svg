@@ -1,0 +1,111 @@
+﻿<svg width="1600" height="850" viewBox="0 0 1600 850" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="850" fill="#F8FAFC"/>
+
+  <text x="800" y="75" text-anchor="middle"
+        font-family="Arial" font-size="42" font-weight="700"
+        fill="#0F172A">
+    Smart Hostel System Architecture
+  </text>
+
+  <text x="800" y="115" text-anchor="middle"
+        font-family="Arial" font-size="20"
+        fill="#64748B">
+    Secure • Modular • Real-Time • Scalable
+  </text>
+
+  <rect x="100" y="175" width="1400" height="120" rx="24"
+        fill="#0B1F3A"/>
+
+  <text x="800" y="225" text-anchor="middle"
+        font-family="Arial" font-size="28" font-weight="700"
+        fill="white">
+    USER INTERFACE
+  </text>
+
+  <text x="800" y="265" text-anchor="middle"
+        font-family="Arial" font-size="20"
+        fill="#D9F4FF">
+    Student • Warden • Admin • Gate • Parent
+  </text>
+
+  <path d="M800 295 V355" stroke="#0F172A" stroke-width="5"/>
+  <path d="M790 345 L800 360 L810 345" fill="#0F172A"/>
+
+  <rect x="250" y="365" width="1100" height="130" rx="24"
+        fill="#087EA4"/>
+
+  <text x="800" y="415" text-anchor="middle"
+        font-family="Arial" font-size="30" font-weight="700"
+        fill="white">
+    PYTHON + FASTAPI BACKEND
+  </text>
+
+  <text x="800" y="455" text-anchor="middle"
+        font-family="Arial" font-size="20"
+        fill="#E6FAFF">
+    REST API • Authentication • Business Logic • WebSocket
+  </text>
+
+  <path d="M800 495 V555" stroke="#0F172A" stroke-width="5"/>
+  <path d="M790 545 L800 560 L810 545" fill="#0F172A"/>
+
+  <rect x="130" y="565" width="420" height="145" rx="22"
+        fill="white" stroke="#CBD5E1" stroke-width="3"/>
+  <text x="340" y="615" text-anchor="middle"
+        font-family="Arial" font-size="27" font-weight="700"
+        fill="#0F172A">
+    PostgreSQL
+  </text>
+  <text x="340" y="655" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    Students • Rooms • QR • Fees
+  </text>
+  <text x="340" y="682" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    Entry/Exit • Visitors • Reports
+  </text>
+
+  <rect x="590" y="565" width="420" height="145" rx="22"
+        fill="white" stroke="#CBD5E1" stroke-width="3"/>
+  <text x="800" y="615" text-anchor="middle"
+        font-family="Arial" font-size="27" font-weight="700"
+        fill="#0F172A">
+    Real-Time Services
+  </text>
+  <text x="800" y="655" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    WebSocket • Notifications
+  </text>
+  <text x="800" y="682" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    Redis • Live Dashboard
+  </text>
+
+  <rect x="1050" y="565" width="420" height="145" rx="22"
+        fill="white" stroke="#CBD5E1" stroke-width="3"/>
+  <text x="1260" y="615" text-anchor="middle"
+        font-family="Arial" font-size="27" font-weight="700"
+        fill="#0F172A">
+    Advanced Services
+  </text>
+  <text x="1260" y="655" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    AI • Payments • Email/SMS
+  </text>
+  <text x="1260" y="682" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    Emergency • Analytics
+  </text>
+
+  <text x="800" y="795" text-anchor="middle"
+        font-family="Arial" font-size="18"
+        fill="#64748B">
+    SMART HOSTEL MANAGEMENT &amp; AUTOMATION SYSTEM
+  </text>
+</svg>

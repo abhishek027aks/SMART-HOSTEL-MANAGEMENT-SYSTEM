@@ -1,0 +1,90 @@
+﻿<svg width="1600" height="500" viewBox="0 0 1600 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B1F3A"/>
+      <stop offset="55%" stop-color="#123B68"/>
+      <stop offset="100%" stop-color="#087EA4"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="500" rx="32" fill="url(#bg)"/>
+
+  <circle cx="1370" cy="80" r="180" fill="#FFFFFF" opacity="0.06"/>
+  <circle cx="1490" cy="420" r="260" fill="#FFFFFF" opacity="0.05"/>
+
+  <rect x="95" y="100" width="115" height="115" rx="28" fill="#FFFFFF" opacity="0.12"/>
+
+  <path d="M125 158 L152 132 L179 158 V190 H163 V168 H141 V190 H125 Z"
+        fill="#FFFFFF"/>
+
+  <text x="250" y="155"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="58"
+        font-weight="700"
+        fill="#FFFFFF">
+    SMART HOSTEL
+  </text>
+
+  <text x="250" y="215"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="30"
+        font-weight="400"
+        fill="#D9F4FF">
+    MANAGEMENT &amp; AUTOMATION SYSTEM
+  </text>
+
+  <line x1="250" y1="250" x2="1030" y2="250"
+        stroke="#FFFFFF" stroke-opacity="0.25"/>
+
+  <text x="250" y="305"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="25"
+        fill="#FFFFFF">
+    Secure • Smart • Real-Time • Scalable
+  </text>
+
+  <text x="250" y="355"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="22"
+        fill="#BFEFFF">
+    A smarter hostel for a safer tomorrow.
+  </text>
+
+  <g transform="translate(1130,145)">
+    <rect width="280" height="190" rx="24"
+          fill="#FFFFFF" opacity="0.10"
+          stroke="#FFFFFF" stroke-opacity="0.18"/>
+
+    <rect x="30" y="30" width="220" height="45" rx="12"
+          fill="#FFFFFF" opacity="0.12"/>
+    <circle cx="55" cy="52" r="8" fill="#FFFFFF"/>
+    <text x="75" y="59"
+          font-family="Arial"
+          font-size="18"
+          fill="#FFFFFF">LIVE HOSTEL</text>
+
+    <rect x="30" y="90" width="100" height="70" rx="14"
+          fill="#FFFFFF" opacity="0.10"/>
+    <text x="50" y="120"
+          font-family="Arial"
+          font-size="15"
+          fill="#BFEFFF">STUDENTS</text>
+    <text x="50" y="147"
+          font-family="Arial"
+          font-size="25"
+          font-weight="700"
+          fill="#FFFFFF">850+</text>
+
+    <rect x="150" y="90" width="100" height="70" rx="14"
+          fill="#FFFFFF" opacity="0.10"/>
+    <text x="168" y="120"
+          font-family="Arial"
+          font-size="15"
+          fill="#BFEFFF">SECURITY</text>
+    <text x="168" y="147"
+          font-family="Arial"
+          font-size="25"
+          font-weight="700"
+          fill="#FFFFFF">24/7</text>
+  </g>
+</svg>
