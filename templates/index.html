@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Smart Hostel — Management & Automation</title>
+  <meta name="description" content="Smart Hostel Management & Automation System">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+     LANDING PAGE
+     This section is shown before login and mirrors the dark,
+     premium hero shown in your reference image.
+============================================================= -->
+<section id="landingPage" class="landing {% if login_page or dashboard %}hidden{% endif %}">
+  <nav class="landing-nav">
+    <div class="brand"><span class="brand-mark">⌂</span><div><b>Smart Hostel</b><small>Safe Students. Smarter Hostels.</small></div></div>
+    <div class="landing-links">
+      <a href="#about">About</a><a href="#features">Features</a><a href="#gallery">Gallery</a><a href="#contact">Contact</a>
+      <a class="btn ghost" href="/login">Login</a><a class="btn primary" href="/login">Get Started</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">SMART HOSTEL MANAGEMENT SYSTEM</span>
+      <h1>A Safer Tomorrow<br><span>Starts at the Gate.</span></h1>
+      <p>Smart Hostel Management System for safe students, smarter hostels and faster operations.</p>
+      <div class="hero-actions">
+        <a class="btn primary big" href="/login">Get Started →</a>
+        <button class="btn glass big" onclick="showToast('Demo: Login to explore every role.')">▶ Watch Demo</button>
+      </div>
+      <div class="trust-row"><span>◉ Secure</span><span>◈ Automated</span><span>✓ Reliable</span></div>
+    </div>
+    <div class="hero-building" aria-label="Hostel building illustration">
+      <div class="building-glow"></div><div class="building">
+        <div class="roof"></div><div class="tower t1"></div><div class="tower t2"></div><div class="tower t3"></div>
+        <div class="windows"></div><div class="door"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-strip">
+    <div><b>850</b><span>Students</span></div><div><b>12</b><span>Blocks</span></div>
+    <div><b>200</b><span>Rooms</span></div><div><b>24/7</b><span>Security</span></div><div><b>100%</b><span>Digital</span></div>
+  </div>
+
+  <section id="features" class="landing-section">
+    <div class="section-title"><span>ONE PLATFORM</span><h2>Everything a modern hostel needs.</h2></div>
+    <div class="feature-grid">
+      <article class="feature-card"><i>⌁</i><h3>QR Gate Security</h3><p>Fast student verification with entry/exit history.</p></article>
+      <article class="feature-card"><i>▣</i><h3>Outpass Automation</h3><p>Apply, approve and track requests digitally.</p></article>
+      <article class="feature-card"><i>◫</i><h3>Fee & Payments</h3><p>Track paid, pending and due hostel fees.</p></article>
+      <article class="feature-card"><i>◉</i><h3>AI Insights</h3><p>Operational insights for wardens and admins.</p></article>
+    </div>
+  </section>
+</section>
+
+
+<!-- ============================================================
+     LOGIN PAGE
+     The server validates the email/password and creates a session.
+============================================================= -->
+<section id="loginPage" class="auth-shell {% if not login_page %}hidden{% endif %}">
+  <div class="auth-panel">
+    <div class="auth-brand"><span class="brand-mark">⌂</span><b>Smart Hostel</b></div>
+    <div class="auth-icon">⌂</div>
+    <h1>Welcome Back</h1>
+    <p>Login to your account</p>
+    <div class="role-tabs">
+      <button class="active" data-role="student" onclick="setLoginRole('student')">Student</button>
+      <button data-role="warden" onclick="setLoginRole('warden')">Warden</button>
+      <button data-role="gate" onclick="setLoginRole('gate')">Gate</button>
+      <button data-role="admin" onclick="setLoginRole('admin')">Admin</button>
+      <button data-role="parent" onclick="setLoginRole('parent')">Parent</button>
+    </div>
+    {% if login_error %}<div class="alert error">{{ login_error }}</div>{% endif %}
+    <form method="post" action="/login" id="loginForm">
+      <label>Email / Roll Number<input id="loginEmail" name="email" type="email" required placeholder="Enter email"></label>
+      <label>Password<input name="password" type="password" required placeholder="Enter password"></label>
+      <label class="check"><input type="checkbox" checked> Remember me <a href="#" onclick="showToast('Ask your admin to reset your password.')">Forgot password?</a></label>
+      <button class="btn primary full" type="submit">Login</button>
+    </form>
+    <div class="or"><span>or</span></div>
+    <button class="btn outline full" onclick="showToast('Google OAuth can be connected later.')">G Continue with Google</button>
+    <small class="demo-note">Demo: student@smarthostel.local / student123</small>
+  </div>
+  <div class="auth-art">
+    <div><span>Manage.</span><span>Monitor.</span><span>Secure</span><span>Together.</span></div>
+    <p>“A smarter hostel<br>for a brighter tomorrow.”</p>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     APP DASHBOARD
+     All dashboards use the same shell. JavaScript switches the
+     visible screen without needing many HTML files.
+============================================================= -->
+<section id="appShell" class="app-shell {% if not dashboard %}hidden{% endif %}">
+  <aside class="sidebar">
+    <div class="side-brand"><span class="brand-mark">⌂</span><b>Smart Hostel</b></div>
+    <div class="role-pill">{{ user.role|capitalize if user else 'Student' }} Portal</div>
+    <nav id="sideNav"></nav>
+    <form method="post" action="/logout" class="logout"><button>↪ Logout</button></form>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><span class="mobile-menu" onclick="toggleSidebar()">☰</span><b id="pageTitle">Dashboard</b><small id="breadcrumb">Smart Hostel</small></div>
+      <div class="top-actions"><span>⌕</span><span class="bell">♧<em>2</em></span><div class="avatar">AS</div><div><b id="userName">{{ user.name if user else 'Aryan Sharma' }}</b><small>{{ user.role|capitalize if user else 'Student' }}</small></div></div>
+    </header>
+
+    <div class="content">
+
+      <!-- STUDENT DASHBOARD -->
+      <section id="screen-student-dashboard" class="screen">
+        <div class="welcome"><div><p>Good Morning, Aryan! 👋</p><h1>Stay Safe, Stay Focused.</h1></div><span class="date-chip">09 Sep 2026</span></div>
+        <div class="metric-grid">
+          <div class="metric"><span>⌂</span><small>Currently</small><b id="insideCount">Inside Hostel</b></div>
+          <div class="metric"><span>↗</span><small>Total Outpasses</small><b id="outpassCount">3</b></div>
+          <div class="metric"><span>!</span><small>Late Returns</small><b>1</b></div>
+          <div class="metric"><span>◩</span><small>Attendance</small><b>92%</b></div>
+        </div>
+        <div class="panel"><div class="panel-head"><h2>Quick Actions</h2></div><div class="quick-grid">
+          <button onclick="openScreen('student-qr')">▦<span>My QR Code</span></button><button onclick="openScreen('student-outpass')">↗<span>Apply Outpass</span></button>
+          <button onclick="openScreen('student-room')">⌂<span>My Room</span></button><button onclick="openScreen('student-payments')">₹<span>Fee Payments</span></button>
+          <button onclick="openScreen('student-complaints')">◉<span>Raise Complaint</span></button>
+        </div></div>
+        <div class="two-col">
+          <div class="panel"><div class="panel-head"><h2>Recent Activity</h2><button class="link-btn" onclick="openScreen('student-history')">View All</button></div><div id="activityTable"></div></div>
+          <div class="panel qr-mini"><div class="panel-head"><h2>My QR Code</h2></div><div class="qr-box" id="qrSmall"></div><b>Aryan Sharma</b><small>Room B-205 • Roll 23CS101</small><button class="btn primary full" onclick="openScreen('student-qr')">Download QR</button></div>
+        </div>
+      </section>
+
+      <!-- STUDENT QR -->
+      <section id="screen-student-qr" class="screen hidden"><div class="page-heading"><div><span>STUDENT</span><h1>My QR Code</h1><p>Show this QR at the gate for quick entry/exit.</p></div><button class="btn outline" onclick="fakeDownload()">↓ Download</button></div>
+        <div class="qr-page panel"><div class="qr-box large" id="qrLarge"></div><h2>Aryan Sharma</h2><p>Room B-205 • Roll 23CS101</p><div class="safe-note">🛡 Keep your QR private<br><small>Do not share it with anyone. Misuse may lead to disciplinary action.</small></div></div>
+      </section>
+
+      <!-- STUDENT OUTPASS -->
+      <section id="screen-student-outpass" class="screen hidden"><div class="page-heading"><div><span>STUDENT</span><h1>Apply for Outpass</h1><p>Submit a request to your warden for approval.</p></div></div>
+        <div class="panel form-panel"><form id="outpassForm" onsubmit="submitOutpass(event)">
+          <div class="form-grid"><label>Type<select name="type"><option>Day Outpass</option><option>Night Outpass</option></select></label><label>Destination<input name="destination" required placeholder="Select destination"></label>
+          <label>From Date & Time<input name="from_time" type="datetime-local" required></label><label>To Date & Time<input name="to_time" type="datetime-local" required></label>
+          <label class="span2">Reason<textarea name="reason" required placeholder="e.g. Going home, medical, shopping etc."></textarea></label>
+          <label class="span2">Emergency Contact Number<input name="emergency_contact" placeholder="Enter contact number"></label></div>
+          <button class="btn primary" type="submit">Submit Request →</button>
+        </form></div>
+      </section>
+
+      <!-- STUDENT HISTORY -->
+      <section id="screen-student-history" class="screen hidden"><div class="page-heading"><div><span>STUDENT</span><h1>Entry / Exit History</h1></div><button class="btn outline" onclick="fakeDownload()">↓ Download PDF</button></div>
+        <div class="panel table-panel"><div id="historyTable"></div></div>
+      </section>
+
+      <!-- STUDENT PAYMENTS -->
+      <section id="screen-student-payments" class="screen hidden"><div class="page-heading"><div><span>STUDENT</span><h1>Fee & Payments</h1><p>Track all hostel and mess payments.</p></div><button class="btn primary" onclick="showToast('Payment gateway demo: connect Razorpay/Stripe here.')">Pay Now</button></div>
+        <div class="metric-grid"><div class="metric"><small>Total Fee</small><b>₹45,000</b></div><div class="metric"><small>Paid</small><b>₹30,000</b></div><div class="metric"><small>Remaining</small><b>₹15,000</b></div><div class="metric"><small>Due Date</small><b>15 Sep 2026</b></div></div>
+        <div class="panel table-panel"><h2>Payment History</h2><div id="paymentTable"></div></div>
+      </section>
+
+      <!-- STUDENT COMPLAINTS -->
+      <section id="screen-student-complaints" class="screen hidden"><div class="page-heading"><div><span>STUDENT</span><h1>Complaints</h1><p>Report hostel issues and track resolution.</p></div><button class="btn primary" onclick="document.getElementById('complaintForm').scrollIntoView({behavior:'smooth'})">＋ Raise Complaint</button></div>
+        <div class="panel table-panel"><div id="complaintTable"></div></div>
+        <div class="panel form-panel"><h2>New Complaint</h2><form id="complaintForm" onsubmit="submitComplaint(event)"><div class="form-grid"><label>Category<select name="category"><option>Electrical</option><option>Plumbing</option><option>Wi-Fi</option><option>Room</option><option>Other</option></select></label><label class="span2">Description<textarea name="description" required placeholder="Describe the problem..."></textarea></label></div><button class="btn primary">Submit Complaint</button></form></div>
+      </section>
+
+      <!-- STUDENT ROOM -->
+      <section id="screen-student-room" class="screen hidden"><div class="page-heading"><div><span>STUDENT</span><h1>My Room</h1></div></div>
+        <div class="room-card panel"><div><small>Room Number</small><b>B-205</b></div><div><small>Block</small><b>Block B</b></div><div><small>Room Type</small><b>Triple Sharing</b></div><div><small>Floor</small><b>2nd Floor</b></div></div>
+        <div class="panel"><h2>Roommates</h2><div class="people-grid"><div class="person">RK<h3>Rohit Kumar</h3><small>23CS102</small></div><div class="person">NG<h3>Neha Gupta</h3><small>23CS103</small></div><div class="person">KP<h3>Karan Patel</h3><small>23CS104</small></div></div></div>
+      </section>
+
+      <!-- WARDEN DASHBOARD -->
+      <section id="screen-warden-dashboard" class="screen hidden"><div class="welcome"><div><p>Warden Control Center</p><h1>Good Morning, Warden 👋</h1></div><span class="date-chip">Live Operations</span></div>
+        <div class="metric-grid"><div class="metric"><small>Total Students</small><b id="wStudents">850</b></div><div class="metric"><small>Inside</small><b id="wInside">731</b></div><div class="metric"><small>Outside</small><b id="wOutside">103</b></div><div class="metric"><small>Late Returns</small><b>4</b></div></div>
+        <div class="two-col"><div class="panel chart-panel"><div class="panel-head"><h2>Hostel Occupancy (Today)</h2></div><canvas id="occupancyChart"></canvas></div><div class="panel"><div class="panel-head"><h2>Student Distribution</h2></div><div class="donut"><div><b>850</b><small>Total</small></div></div><div class="legend"><span>● Inside 731</span><span>● Outside 103</span><span>● On Leave 12</span><span>● Late 4</span></div></div></div>
+        <div class="panel table-panel"><div class="panel-head"><h2>Recent Outpass Requests</h2><button class="link-btn" onclick="openScreen('warden-outpass')">View All</button></div><div id="wRecentOutpass"></div></div>
+      </section>
+
+      <!-- WARDEN STUDENTS -->
+      <section id="screen-warden-students" class="screen hidden"><div class="page-heading"><div><span>WARDEN</span><h1>Student Management</h1></div><button class="btn primary" onclick="showToast('Add Student form can be connected to the same API.')">＋ Add Student</button></div><div class="panel table-panel"><div id="studentTable"></div></div></section>
+
+      <!-- WARDEN OUTPASS -->
+      <section id="screen-warden-outpass" class="screen hidden"><div class="page-heading"><div><span>WARDEN</span><h1>Outpass Requests</h1></div></div><div class="panel table-panel"><div id="wardenOutpassTable"></div></div></section>
+
+      <!-- WARDEN ROOMS -->
+      <section id="screen-warden-rooms" class="screen hidden"><div class="page-heading"><div><span>WARDEN</span><h1>Room Management</h1></div><button class="btn primary" onclick="showToast('Room creation can be wired to a POST /api/room endpoint.')">＋ Add Room</button></div><div class="panel table-panel"><div id="roomTable"></div></div></section>
+
+      <!-- WARDEN VISITORS -->
+      <section id="screen-warden-visitors" class="screen hidden"><div class="page-heading"><div><span>WARDEN</span><h1>Visitor Management</h1></div></div><div class="panel form-panel"><form onsubmit="addVisitor(event)"><div class="form-grid"><label>Visitor Name<input name="name" required></label><label>Mobile<input name="mobile" required></label><label>Student Roll No.<input name="roll_no" required placeholder="23CS101"></label><label>Purpose<input name="purpose" required placeholder="Parent / Friend / Official"></label></div><button class="btn primary">＋ New Visitor</button></form></div><div class="panel table-panel"><div id="visitorTable"></div></div></section>
+
+      <!-- GATE TERMINAL -->
+      <section id="screen-gate-terminal" class="screen hidden"><div class="page-heading"><div><span>SECURITY</span><h1>Gate Terminal</h1><p>Scan a QR code or manually verify a student roll number.</p></div><span class="status-live">● LIVE</span></div>
+        <div class="gate-grid"><div class="panel scanner"><div class="scan-frame"><span>QR</span></div><h2>Ready to Scan</h2><p>Show QR code in front of camera.</p><div class="form-row"><input id="gateRoll" placeholder="Or enter roll no."><select id="gateAction"><option>Entry</option><option>Exit</option></select></div><button class="btn primary full" onclick="gateVerify()">Confirm <span id="gateActionText">Entry</span></button></div><div class="panel"><h2>Student Verified</h2><div id="gateResult" class="verified-card"><div class="avatar xl">AS</div><h2>Aryan Sharma</h2><p>Room B-205 • 23CS101</p><span class="badge success">Inside Hostel</span></div></div></div>
+      </section>
+
+      <!-- ADMIN SETTINGS -->
+      <section id="screen-admin-settings" class="screen hidden"><div class="page-heading"><div><span>ADMIN</span><h1>Settings</h1><p>Manage hostel-wide configuration.</p></div></div><div class="panel form-panel"><div class="form-grid"><label>Hostel Name<input value="Smart Hostel"></label><label>Contact Email<input value="admin@smarthostel.local"></label><label>Address<input value="Naini, Prayagraj, Uttar Pradesh"></label><label>Contact Number<input value="9876543210"></label></div><button class="btn primary" onclick="showToast('Settings saved locally for this demo.')">Save Changes</button></div><div class="panel"><h2>System Status</h2><div class="status-list"><span>Database <b class="badge success">Connected</b></span><span>Security <b class="badge success">Protected</b></span><span>Automation <b class="badge success">Enabled</b></span><span>API <b class="badge success">Running</b></span></div></div></section>
+
+    </div>
+  </main>
+</section>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// FRONTEND CONTROLLER
+// One JS block keeps the project small: no separate app.js file.
+// It talks to Flask JSON endpoints using fetch().
+// ============================================================
+
+const currentUser = {{ (user or {})|tojson }};
+const role = currentUser.role || "{{ user.role if user else 'student' }}";
+
+const navByRole = {
+  student: [
+    ["student-dashboard","Dashboard","⌂"],["student-qr","My QR Code","▦"],["student-outpass","Apply Outpass","↗"],
+    ["student-history","Entry/Exit History","↕"],["student-payments","Fee & Payments","₹"],["student-complaints","Complaints","◉"],["student-room","My Room","▣"]
+  ],
+  warden: [
+    ["warden-dashboard","Dashboard","⌂"],["warden-students","Students","♙"],["warden-outpass","Outpass Requests","↗"],
+    ["warden-visitors","Visitors","♧"],["warden-rooms","Rooms & Reports","▣"],["gate-terminal","Gate Terminal","▦"],["admin-settings","Settings","⚙"]
+  ],
+  gate: [["gate-terminal","Gate Terminal","▦"],["warden-students","Student Search","⌕"],["warden-visitors","Visitor Entry","♧"]],
+  admin: [["warden-dashboard","Dashboard","⌂"],["warden-students","Students","♙"],["warden-outpass","Outpass Requests","↗"],["warden-rooms","Rooms","▣"],["admin-settings","Settings","⚙"]],
+  parent: [["student-dashboard","Dashboard","⌂"],["student-history","Entry/Exit History","↕"],["student-room","Student Room","▣"]]
+};
+
+function buildNav() {
+  const nav = document.getElementById("sideNav");
+  if (!nav) return;
+  nav.innerHTML = (navByRole[role] || navByRole.student).map((x, i) =>
+    `<button class="${i===0?'active':''}" onclick="openScreen('${x[0]}', this)"><span>${x[2]}</span>${x[1]}</button>`
+  ).join("");
+}
+
+function openScreen(id, button=null) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+  const target = document.getElementById("screen-"+id);
+  if (!target) return;
+  target.classList.remove("hidden");
+  document.querySelectorAll("#sideNav button").forEach(b => b.classList.remove("active"));
+  if (button) button.classList.add("active");
+  const title = target.querySelector("h1")?.textContent || "Dashboard";
+  document.getElementById("pageTitle").textContent = title;
+  document.getElementById("breadcrumb").textContent = "Smart Hostel / " + title;
+  if (id.includes("student")) loadStudentData();
+  if (id.includes("warden") || id.includes("gate")) loadWardenData();
+}
+
+function showToast(message) {
+  const t = document.getElementById("toast");
+  t.textContent = message; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function setLoginRole(r) {
+  const demo = {
+    student:["student@smarthostel.local","student123"],
+    warden:["warden@smarthostel.local","warden123"],
+    gate:["gate@smarthostel.local","gate123"],
+    admin:["admin@smarthostel.local","admin123"],
+    parent:["parent@smarthostel.local","parent123"]
+  }[r];
+  document.querySelectorAll(".role-tabs button").forEach(b => b.classList.toggle("active", b.dataset.role===r));
+  document.getElementById("loginEmail").value = demo[0];
+  document.querySelector("#loginForm input[type=password]").value = demo[1];
+}
+
+async function loadOverview() {
+  const res = await fetch("/api/overview");
+  if (!res.ok) return;
+  const d = await res.json();
+  const inside = document.getElementById("insideCount");
+  if (inside) inside.textContent = d.inside > 0 ? "Inside Hostel" : "Outside";
+  const op = document.getElementById("outpassCount");
+  if (op) op.textContent = d.pending_outpasses;
+  ["wStudents","wInside","wOutside"].forEach((id,i) => {
+    const el=document.getElementById(id);
+    if(el) el.textContent=[d.students,d.inside,d.outside][i];
+  });
+}
+
+async function loadStudentData() {
+  const res = await fetch("/api/student-data");
+  if (!res.ok) return;
+  const d = await res.json();
+
+  const activity = d.logs.slice(0,5).map((x,i) =>
+    `<tr><td>${x.action==="Entry"?"↙":"↗"}</td><td>${x.action}</td><td>${x.gate}</td><td>${x.logged_at}</td><td><span class="badge ${x.action==="Entry"?"success":"danger"}">${x.action}</span></td></tr>`
+  ).join("");
+  document.getElementById("activityTable").innerHTML = table(["","Type","Gate","Date & Time","Status"], activity);
+
+  document.getElementById("historyTable").innerHTML = table(
+    ["Date & Time","Type","Gate","Status"],
+    d.logs.map(x=>`<tr><td>${x.logged_at}</td><td>${x.action}</td><td>${x.gate}</td><td><span class="badge ${x.action==="Entry"?"success":"danger"}">${x.action}</span></td></tr>`).join("")
+  );
+
+  document.getElementById("paymentTable").innerHTML = table(
+    ["Date","Description","Amount","Status","Receipt"],
+    d.payments.map(x=>`<tr><td>${x.paid_on}</td><td>${x.description}</td><td>₹${Number(x.amount).toLocaleString()}</td><td><span class="badge success">${x.status}</span></td><td><button class="icon-btn" onclick="fakeDownload()">↓</button></td></tr>`).join("")
+  );
+
+  document.getElementById("complaintTable").innerHTML = table(
+    ["#","Category","Description","Status","Date"],
+    d.complaints.map((x,i)=>`<tr><td>${i+1}</td><td>${x.category}</td><td>${x.description}</td><td><span class="badge ${x.status==="Resolved"?"success":x.status==="Open"?"danger":"warning"}">${x.status}</span></td><td>${x.created_at}</td></tr>`).join("")
+  );
+}
+
+async function loadWardenData() {
+  const res = await fetch("/api/warden-data");
+  if (!res.ok) return;
+  const d = await res.json();
+
+  document.getElementById("studentTable").innerHTML = table(
+    ["Name","Roll No.","Room","Phone","Status","Action"],
+    d.students.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.roll_no}</td><td>${x.room}</td><td>${x.phone}</td><td><span class="badge success">Inside</span></td><td><button class="icon-btn">✎</button></td></tr>`).join("")
+  );
+
+  const outpassRows = d.outpasses.map(x=>`<tr><td>${x.name}</td><td>${x.roll_no}</td><td>${x.room}</td><td>${x.type}</td><td>${x.destination}</td><td>${x.created_at}</td><td><span class="badge ${x.status==="Approved"?"success":x.status==="Rejected"?"danger":"warning"}">${x.status}</span></td><td>${x.status==="Pending" ? `<button class="icon-btn" onclick="updateOutpass(${x.id},'Approved')">✓</button> <button class="icon-btn danger-btn" onclick="updateOutpass(${x.id},'Rejected')">×</button>` : ""}</td></tr>`).join("");
+  document.getElementById("wardenOutpassTable").innerHTML = table(["Student","Roll","Room","Type","Destination","Date","Status","Action"],outpassRows);
+  document.getElementById("wRecentOutpass").innerHTML = table(["Student","Room","Type","Date","Status","Action"], d.outpasses.slice(0,5).map(x=>`<tr><td>${x.name}</td><td>${x.room}</td><td>${x.type}</td><td>${x.created_at}</td><td><span class="badge warning">${x.status}</span></td><td><button class="icon-btn" onclick="updateOutpass(${x.id},'Approved')">✓</button></td></tr>`).join(""));
+
+  document.getElementById("roomTable").innerHTML = table(["Room","Block","Type","Occupancy","Status","Action"], d.rooms.map(x=>`<tr><td>${x.room_no}</td><td>${x.block}</td><td>${x.room_type}</td><td>${x.occupancy}</td><td><span class="badge ${x.status==="Available"?"success":x.status==="Partial"?"warning":"danger"}">${x.status}</span></td><td><button class="icon-btn">✎</button></td></tr>`).join(""));
+
+  document.getElementById("visitorTable").innerHTML = table(["Name","Mobile","Purpose","Student","Status","Entry"], d.visitors.map(x=>`<tr><td>${x.name}</td><td>${x.mobile}</td><td>${x.purpose}</td><td>${x.student}</td><td><span class="badge success">${x.status}</span></td><td>${x.entry_time}</td></tr>`).join(""));
+
+  // Draw the simple chart only when its canvas exists.
+  if (document.getElementById("occupancyChart") && !window.occupancyChart) {
+    window.occupancyChart = new Chart(document.getElementById("occupancyChart"), {
+      type:"line",
+      data:{labels:["9 AM","12 PM","3 PM","6 PM","9 PM","12 AM"],datasets:[{label:"Inside",data:[720,745,731,760,748,731],tension:.35}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,min:650}}}
+    });
+  }
+}
+
+function table(headers, rows) {
+  return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows || `<tr><td colspan="${headers.length}" class="empty">No records yet.</td></tr>`}</tbody></table></div>`;
+}
+
+async function submitOutpass(e) {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  const res = await fetch("/api/outpass",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  const d = await res.json();
+  showToast(d.message);
+  if (d.ok) { e.target.reset(); loadStudentData(); openScreen("student-dashboard"); }
+}
+
+async function submitComplaint(e) {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  const res = await fetch("/api/complaint",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  const d = await res.json();
+  showToast(d.message);
+  if (d.ok) { e.target.reset(); loadStudentData(); }
+}
+
+async function updateOutpass(id,status) {
+  const res = await fetch("/api/outpass/"+id,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});
+  const d = await res.json(); showToast(d.message); if(d.ok) loadWardenData();
+}
+
+async function gateVerify() {
+  const roll = document.getElementById("gateRoll").value.trim() || "23CS101";
+  const action = document.getElementById("gateAction").value;
+  const res = await fetch("/api/gate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({roll_no:roll,action,gate:"Main Gate"})});
+  const d = await res.json();
+  if(!d.ok) return showToast(d.message);
+  document.getElementById("gateResult").innerHTML = `<div class="avatar xl">AS</div><h2>${d.student.name}</h2><p>Room ${d.student.room} • ${d.student.roll_no}</p><span class="badge success">${action} Verified</span>`;
+  showToast(d.message);
+  loadOverview();
+}
+
+async function addVisitor(e) {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  const res = await fetch("/api/visitor",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  const d = await res.json(); showToast(d.message); if(d.ok){e.target.reset();loadWardenData();}
+}
+
+function fakeDownload(){ showToast("Demo download prepared. Connect PDF/QR generation in production."); }
+
+function makeQR(el) {
+  // Lightweight QR-like visual placeholder. In production, replace with a
+  // server-generated QR token or a trusted QR library; never put passwords in a QR.
+  if(!el) return;
+  el.innerHTML = Array.from({length:121},(_,i)=>`<i class="${(i*17+i*i)%7<3?'on':''}"></i>`).join("");
+}
+
+function toggleSidebar(){ document.querySelector(".sidebar").classList.toggle("mobile-open"); }
+
+document.addEventListener("DOMContentLoaded",()=>{
+  if(!document.getElementById("appShell").classList.contains("hidden")){
+    buildNav(); loadOverview(); loadStudentData(); loadWardenData();
+    makeQR(document.getElementById("qrSmall")); makeQR(document.getElementById("qrLarge"));
+    // Hide screens that do not belong to the current role, then show the first role screen.
+    document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden"));
+    const first = (navByRole[role]||navByRole.student)[0][0];
+    document.getElementById("screen-"+first)?.classList.remove("hidden");
+  }
+});
+</script>
+</body>
+</html>

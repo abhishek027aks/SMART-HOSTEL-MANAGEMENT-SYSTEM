@@ -1,389 +1,108 @@
-# 🏠 Smart Hostel Management & Automation System
+# SMART HOSTEL MANAGEMENT
 
-<p align="center">
-  <img src="docs/images/smart-hostel-banner.svg" alt="Smart Hostel Management & Automation System" width="100%">
-</p>
+A minimal-file Flask + SQLite implementation of the Smart Hostel UI shown in the reference image.
 
-<p align="center"><strong>A Smarter, Safer and Fully Connected Hostel</strong></p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge">
-  <img src="https://img.shields.io/badge/Backend-Python-blue?style=for-the-badge&logo=python">
-  <img src="https://img.shields.io/badge/Framework-FastAPI-009688?style=for-the-badge&logo=fastapi">
-  <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql">
-</p>
-
----
-
-## 📌 Project Overview
-
-**Smart Hostel Management & Automation System** is a modern, secure and scalable platform designed to digitally manage hostel operations from a single centralized system.
-
-It aims to replace paper registers, manual entry/exit records and disconnected processes with a **smart, automated and real-time hostel management platform**.
-
-### 🎯 Designed For
-
-- 👨‍🎓 Students
-- 👨‍💼 Wardens
-- 🛡️ Administrators
-- 🚪 Gate Operators
-- 👨‍👩‍👧 Parents / Guardians
-
----
-
-## 🖼️ Project Preview
-
-<p align="center">
-  <img src="docs/images/readme-overview.png" alt="Smart Hostel project overview" width="100%">
-</p>
-
----
-
-## 🚀 Why Smart Hostel?
-
-Traditional hostel management can depend heavily on:
-
-- ❌ Paper registers
-- ❌ Manual entry/exit records
-- ❌ Paper-based outpasses
-- ❌ Difficult visitor tracking
-- ❌ Separate fee records
-- ❌ Delayed reporting
-- ❌ Limited real-time visibility
-- ❌ Difficult emergency management
-
-### ✅ Expected Benefits
-
-- Digital automation
-- Real-time entry/exit tracking
-- Secure QR-based verification
-- Centralized student records
-- Faster complaint resolution
-- Better hostel security
-- Integrated fee management
-- Instant reports and analytics
-- Live notifications
-- AI-assisted insights
-
----
-
-# ✨ Key Features
-
-### 👨‍🎓 Student Management
-- Student profile and status
-- Hostel / block / room allocation
-- Secure student identity and QR
-- Entry / exit history
-- Outpass & leave requests
-- Fee information
-- Complaints and notifications
-
-### 📱 QR-Based Entry & Exit
+## Folder structure
 
 ```text
-Student QR
-    ↓
-Gate Scanner
-    ↓
-Secure Verification
-    ↓
-Student Status Check
-    ↓
-Entry / Exit
-    ↓
-Database Update
-    ↓
-Live Dashboard
+SMART_HOSTEL_MANAGEMENT/
+├── app.py
+├── requirements.txt
+├── README.md
+├── templates/
+│   └── index.html
+└── static/
+    └── style.css
 ```
 
-### 🚪 Outpass & Leave Management
-- Online requests
-- Warden approval/rejection
-- Request history
-- Validity tracking
-- Return-time monitoring
-- Late-return alerts
+`database/hostel.db` is created automatically the first time `app.py` runs.
 
-### 👥 Visitor Management
+## Run on Windows Terminal / PowerShell
+
+```powershell
+E:
+cd "E:\SMART HOSTEL MANAGEMENT"
+
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+For another phone/laptop on the same Wi-Fi, find the PC IPv4 address:
+
+```powershell
+ipconfig
+```
+
+Then open:
+
+```text
+http://YOUR-PC-IP:5000
+```
+
+If Windows Firewall asks, allow Python on Private networks.
+
+## Demo logins
+
+| Role | Email | Password |
+|---|---|---|
+| Student | student@smarthostel.local | student123 |
+| Warden | warden@smarthostel.local | warden123 |
+| Gate | gate@smarthostel.local | gate123 |
+| Admin | admin@smarthostel.local | admin123 |
+| Parent | parent@smarthostel.local | parent123 |
+
+## What is already working
+
+- Landing page
+- Login/session authentication
+- Role-specific navigation
+- Student dashboard
+- QR-style student screen
+- Outpass submission -> SQLite
+- Warden outpass approval/rejection -> SQLite
+- Entry/exit gate logging -> SQLite
+- Complaint submission -> SQLite
+- Fee/payment history -> SQLite
+- Student room screen
+- Warden student list
+- Warden room list
 - Visitor registration
-- Student association
-- Visitor entry/exit
-- Purpose of visit
-- Visit history
-- Security verification
+- Gate terminal
+- Responsive mobile layout
+- Dashboard metrics and occupancy chart
+- Automatic database creation/seeding
 
-### 🏢 Room & Block Management
-- Blocks, floors and rooms
-- Bed allocation
-- Occupancy tracking
-- Vacant/occupied status
-- Student-room mapping
+## Important production upgrades
 
-### 💳 Fees & Payments
-- Fee records
-- Pending fees
-- Payment history
-- Due-date tracking
-- Receipts/reports
-- Future payment gateway integration
+This project is intentionally small and runnable. Before a real hostel deploys it:
 
-### 🛠️ Complaints & Maintenance
-- Complaint submission
-- Categories and priorities
-- Assignment and status tracking
-- Resolution history
-- Maintenance records
+1. Put the app behind HTTPS.
+2. Set a strong `FLASK_SECRET_KEY`.
+3. Replace demo passwords with admin-created users and password reset.
+4. Add CSRF protection and stronger authorization policies.
+5. Replace the visual QR placeholder with signed, expiring QR tokens.
+6. Add camera QR scanning on the gate terminal.
+7. Add real payment gateway integration.
+8. Add audit logs for admin/warden actions.
+9. Move SQLite to PostgreSQL/MySQL for multi-instance production deployment.
+10. Run with Waitress on Windows or Gunicorn on Linux instead of Flask debug server.
 
-### 🔔 Notifications
-- In-app notifications
-- Email/SMS integration
-- Outpass updates
-- Fee reminders
-- Complaint updates
-- Emergency alerts
+## Code map
 
-### 🚨 Emergency Management
-- Emergency alerts
-- Important announcements
-- Gate monitoring
-- Incident records
-- Emergency reporting
+- `app.py` = backend, database, login, APIs.
+- `templates/index.html` = all screens + frontend JavaScript in one file.
+- `static/style.css` = complete UI styling.
+- `requirements.txt` = only required Python packages.
 
-### 📊 Reports & Analytics
-- Student reports
-- Entry/exit reports
-- Outpass reports
-- Visitor reports
-- Room occupancy
-- Fee reports
-- Complaint reports
-- Emergency reports
-
-### 🤖 AI-Powered Insights
-Planned capabilities include:
-- Activity insights
-- Anomaly detection
-- Unusual entry/exit pattern detection
-- Complaint trend analysis
-- Predictive maintenance insights
-- Administrative assistance
-
-### ⚡ Real-Time Monitoring
-- Live gate activity
-- Entry/exit updates
-- Live notifications
-- Emergency events
-- Dashboard activity
-- WebSocket-based updates
-
----
-
-# 🏗️ System Architecture
-
-<p align="center">
-  <img src="docs/images/architecture.svg" alt="Smart Hostel System Architecture" width="100%">
-</p>
-
-```text
-Users
-  │
-  ▼
-Web / Mobile Interface
-  │
-  ▼
-Python + FastAPI Backend
-  │
-  ├── Authentication
-  ├── Business Logic
-  ├── REST APIs
-  ├── Real-Time Services
-  └── Background Tasks
-  │
-  ▼
-PostgreSQL Database
-  │
-  ├── Students
-  ├── Rooms
-  ├── Entries / Exits
-  ├── Fees
-  ├── Visitors
-  ├── Complaints
-  └── Reports
-```
-
----
-
-# 🧩 Technology Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | Python |
-| API Framework | FastAPI |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy |
-| Validation | Pydantic |
-| Server | Uvicorn |
-| Authentication | JWT |
-| Real-Time | WebSocket |
-| Frontend | Planned Web UI |
-| Mobile | PWA / future mobile app |
-| AI | Planned AI service |
-| Cache | Redis — future |
-| Version Control | Git + GitHub |
-
----
-
-# 📁 Project Structure
-
-```text
-SMART-HOSTEL-MANAGEMENT-SYSTEM/
-│
-├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   ├── repositories/
-│   │   ├── db/
-│   │   ├── __init__.py
-│   │   └── main.py
-│   ├── tests/
-│   └── requirements.txt
-│
-├── frontend/
-├── ai-service/
-├── database/
-├── docs/
-│   └── images/
-│       ├── architecture.svg
-│       ├── smart-hostel-banner.svg
-│       └── readme-overview.png
-├── tests/
-├── .env.example
-├── .gitignore
-└── README.md
-```
-
----
-
-# 🔐 Security
-
-Security is a core part of the planned system.
-
-- 🔑 Authentication
-- 🛡️ Role-based access control
-- 🔐 Password hashing
-- 🎫 JWT authentication
-- 🔒 Environment-based secrets
-- 📝 Audit logging
-- 🚫 Protected APIs
-- 🧹 Input validation
-- 📊 Controlled data access
-
-**Never commit real passwords, API keys or production secrets to GitHub.**
-
----
-
-# 👥 User Roles
-
-| Role | Main Responsibilities |
-|---|---|
-| 👨‍🎓 Student | Profile, QR, outpass, fees, complaints |
-| 👨‍💼 Warden | Approvals, students, rooms, complaints |
-| 🛡️ Admin | Complete system control and reports |
-| 🚪 Gate Operator | QR verification and entry/exit |
-| 👨‍👩‍👧 Parent | Student status and important updates |
-
----
-
-# 🗺️ Development Roadmap
-
-### Phase 1 — Foundation
-- [x] GitHub repository setup
-- [x] Professional project structure
-- [x] README documentation
-- [x] Architecture documentation
-- [ ] Core database design
-
-### Phase 2 — Core Management
-- [ ] Authentication
-- [ ] Student management
-- [ ] Hostel/block/room management
-- [ ] Outpass management
-- [ ] Entry/exit management
-
-### Phase 3 — Operations
-- [ ] Visitor management
-- [ ] Fees & payments
-- [ ] Complaints & maintenance
-- [ ] Notifications
-- [ ] Reports & analytics
-
-### Phase 4 — Smart Features
-- [ ] Real-time dashboard
-- [ ] Emergency management
-- [ ] AI-powered insights
-- [ ] Advanced analytics
-
-### Phase 5 — Expansion
-- [ ] PWA/mobile experience
-- [ ] Payment gateway
-- [ ] Advanced security integrations
-- [ ] Multi-hostel support
-- [ ] Production deployment
-
----
-
-# 📊 Project Status
-
-**🟠 In Development**
-
-The repository foundation, project structure and documentation assets are prepared. Core implementation will be developed incrementally.
-
----
-
-# 🤝 Contributing
-
-Contributions, suggestions and feedback are welcome.
-
-```text
-Fork
-  ↓
-Create a feature branch
-  ↓
-Make your changes
-  ↓
-Test
-  ↓
-Commit
-  ↓
-Open a Pull Request
-```
-
----
-
-# ⭐ Support the Project
-
-If you find this project useful:
-
-- ⭐ Star the repository
-- 🍴 Fork the repository
-- 💡 Share suggestions
-- 🐛 Report issues
-- 🤝 Contribute improvements
-
----
-
-## 📜 License
-
-**To Be Added**
-
----
-
-<p align="center">
-  <strong>🏠 Smart Hostel Management & Automation System</strong><br>
-  <em>A smarter hostel for a safer tomorrow.</em><br><br>
-  Built with ❤️ by <strong>Abhishek Kumar Singh</strong>
-</p>
+Every major backend/frontend section contains comments explaining what it does and how the pieces communicate.
