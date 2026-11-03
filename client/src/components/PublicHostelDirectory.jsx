@@ -1,0 +1,513 @@
+import { useEffect, useState } from "react";
+import { Building2, Bed, MapPin, Mail, Phone, Search, X, RefreshCw, ChevronLeft, ChevronRight, MessageCircle, Navigation, IndianRupee } from "lucide-react";
+import { API_BASE_URL, apiRequest } from "../services/api.js";
+import "../styles/public-hostels.css";
+
+const imageUrl = (value) => {
+  if (typeof value !== "string" || !value.trim()) return "";
+  const path = value.trim();
+
+  if (/^https?:\/\//i.test(path)) return path;
+  if (path.startsWith("/")) return `${API_BASE_URL.replace(/\/+$/, "")}${path}`;
+
+  return "";
+};
+
+const locationText = (hostel) =>
+  [hostel.city, hostel.state, hostel.pincode].filter(Boolean).join(", ") ||
+  "Location not provided";
+
+const addressText = (hostel) =>
+  [hostel.address, hostel.city, hostel.state, hostel.pincode]
+    .filter(Boolean)
+    .join(", ");
+
+const PRICE_OPTIONS = [
+  { key: "singleSharing", label: "Single sharing" },
+  { key: "doubleSharing", label: "Double sharing" },
+  { key: "tripleSharing", label: "Triple sharing" },
+  { key: "fourSharing", label: "Four sharing" }
+];
+
+const listedPrices = (pricing) =>
+  PRICE_OPTIONS
+    .map(({ key, label }) => ({ key, label, amount: pricing?.[key] }))
+    .filter(({ amount }) =>
+      amount !== "" &&
+      amount !== null &&
+      amount !== undefined &&
+      Number.isFinite(Number(amount)) &&
+      Number(amount) > 0
+    )
+    .map((item) => ({ ...item, amount: Number(item.amount) }));
+
+const formatMoney = (amount) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0
+  }).format(Number(amount));
+
+const googleMapsUrl = (hostel) => {
+  const location = locationText(hostel);
+  const query = addressText(hostel) ||
+    [hostel.name, location !== "Location not provided" ? location : ""]
+      .filter(Boolean)
+      .join(", ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+};
+
+const whatsappUrl = (contact) => {
+  let digits = String(contact || "").replace(/\D/g, "");
+  if (digits.length === 10) digits = `91${digits}`;
+  return digits.length >= 10 && digits.length <= 15
+    ? `https://wa.me/${digits}`
+    : "";
+};
+function HostelPhoto({ src, alt, className = "" }) {
+  const [failed, setFailed] = useState(false);
+  const source = imageUrl(src);
+
+  useEffect(() => setFailed(false), [source]);
+
+  if (!source || failed) {
+    return (
+      <div className={`${className} public-hostel-photo-fallback`} aria-label={alt}>
+        <Building2 size={36} aria-hidden="true" />
+        <span>Hostel photo</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className={className}
+      src={source}
+      alt={alt}
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+function HostelDetails({ hostel, onClose }) {
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  const setup = hostel.roomSetup || {};
+  const gallery = Array.isArray(hostel.galleryImages)
+    ? hostel.galleryImages.filter((item) => imageUrl(item))
+    : [];
+
+  return (
+    <div
+      className="public-hostel-modal-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="public-hostel-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="public-hostel-details-title"
+      >
+        <button
+          type="button"
+          className="public-hostel-modal-close"
+          onClick={onClose}
+          aria-label="Close hostel details"
+        >
+          <X size={20} />
+        </button>
+
+        <HostelPhoto
+          src={hostel.photoUrl}
+          alt={`${hostel.name} hostel`}
+          className="public-hostel-modal-cover"
+        />
+
+        <div className="public-hostel-modal-content">
+          <span className="public-hostel-kicker">HOSTEL PROFILE</span>
+          <h2 id="public-hostel-details-title">{hostel.name}</h2>
+          <p className="public-hostel-location">
+            <MapPin size={16} aria-hidden="true" />
+            {locationText(hostel)}
+          </p>
+
+          <div className="public-hostel-detail-grid">
+            <div>
+              <span>Full address</span>
+              <strong>{addressText(hostel) || "Not provided"}</strong>
+            </div>
+            <div>
+              <span>Contact number</span>
+              {hostel.contact ? (
+                <a href={`tel:${hostel.contact}`}>{hostel.contact}</a>
+              ) : (
+                <strong>Not provided</strong>
+              )}
+            </div>
+            <div>
+              <span>Email address</span>
+              {hostel.email ? (
+                <a href={`mailto:${hostel.email}`}>{hostel.email}</a>
+              ) : (
+                <strong>Not provided</strong>
+              )}
+            </div>
+            <div>
+              <span>Listed since</span>
+              <strong>
+                {hostel.createdAt
+                  ? new Date(hostel.createdAt).toLocaleDateString()
+                  : "Not available"}
+              </strong>
+            </div>
+          </div>
+
+          <section className="public-hostel-pricing" aria-label="Hostel rent and charges">
+            <h3><IndianRupee size={19} aria-hidden="true" /> Rent and charges</h3>
+            {listedPrices(hostel.pricing).length > 0 ? (
+              <div className="public-hostel-pricing-list">
+                {listedPrices(hostel.pricing).map(({ key, label, amount }) => (
+                  <div className="public-hostel-pricing-item" key={key}>
+                    <span>{label}</span>
+                    <strong>{formatMoney(amount)} <small>/ month</small></strong>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="public-hostel-price-note">
+                Monthly rent not listed. Contact the hostel for current prices.
+              </p>
+            )}
+            <div className="public-hostel-extra-charges">
+              <div>
+                <span>Security deposit</span>
+                <strong>{hostel.pricing?.securityDeposit != null ? formatMoney(hostel.pricing.securityDeposit) : "Confirm with hostel"}</strong>
+              </div>
+              <div>
+                <span>Mess charges / month</span>
+                <strong>{hostel.pricing?.messCharges != null ? formatMoney(hostel.pricing.messCharges) : "Not specified"}</strong>
+              </div>
+              <div>
+                <span>Mess included in rent</span>
+                <strong>
+                  {hostel.pricing?.messIncluded === true
+                    ? "Yes"
+                    : hostel.pricing?.messIncluded === false
+                      ? "No"
+                      : "Confirm with hostel"}
+                </strong>
+              </div>
+            </div>
+          </section>
+          <div className="public-hostel-action-row">
+            {hostel.contact ? (
+              <a className="public-hostel-action" href={`tel:${String(hostel.contact).replace(/[^\d+]/g, "")}`}>
+                <Phone size={16} aria-hidden="true" /> Call hostel
+              </a>
+            ) : null}
+            {whatsappUrl(hostel.contact) ? (
+              <a className="public-hostel-action public-hostel-action-whatsapp" href={whatsappUrl(hostel.contact)} target="_blank" rel="noreferrer">
+                <MessageCircle size={16} aria-hidden="true" /> WhatsApp
+              </a>
+            ) : null}
+            {(addressText(hostel) || locationText(hostel) !== "Location not provided") ? (
+              <a className="public-hostel-action public-hostel-action-maps" href={googleMapsUrl(hostel)} target="_blank" rel="noreferrer">
+                <Navigation size={16} aria-hidden="true" /> Google Maps
+              </a>
+            ) : null}
+          </div>          <h3>Room setup</h3>
+          <div className="public-hostel-stats">
+            <div><strong>{Number(setup.totalRooms) || 0}</strong><span>Total rooms</span></div>
+            <div><strong>{Number(setup.totalBeds) || 0}</strong><span>Total beds</span></div>
+            <div><strong>{Number(setup.bedsPerRoom) || 0}</strong><span>Beds per room</span></div>
+          </div>
+
+          {Array.isArray(setup.roomTypes) && setup.roomTypes.length > 0 ? (
+            <div className="public-hostel-room-types">
+              <span>Room types</span>
+              <div>
+                {setup.roomTypes.map((type) => (
+                  <span className="public-hostel-chip" key={type}>{type}</span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {gallery.length > 0 ? (
+            <>
+              <h3>Hostel gallery</h3>
+              <div className="public-hostel-gallery">
+                {gallery.map((photo, index) => (
+                  <HostelPhoto
+                    key={`${photo}-${index}`}
+                    src={photo}
+                    alt={`${hostel.name} gallery ${index + 1}`}
+                    className="public-hostel-gallery-photo"
+                  />
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          <p className="public-hostel-disclaimer">
+            Details are supplied by the hostel owner. Room setup figures may describe
+            the registered profile and are not a live vacancy guarantee.
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default function PublicHostelDirectory() {
+  const [hostels, setHostels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const [query, setQuery] = useState("");
+  const [pagination, setPagination] = useState({ page: 1, limit: 9, total: 0, pages: 0 });
+  const [selected, setSelected] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: "9"
+    });
+    if (query) params.set("q", query);
+
+    apiRequest(`/api/hostels/public?${params.toString()}`, {
+      signal: controller.signal
+    })
+      .then((response) => {
+        setHostels(response.data?.items || []);
+        setPagination(response.data?.pagination || { page, limit: 9, total: 0, pages: 0 });
+      })
+      .catch((requestError) => {
+        if (requestError.name !== "AbortError") setError(requestError.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [page, query, reloadKey]);
+
+  const search = (event) => {
+    event.preventDefault();
+    setPage(1);
+    setQuery(searchText.trim());
+  };
+
+  return (
+    <section
+      className="public-hostels-section"
+      id="registered-hostels"
+      aria-labelledby="public-hostels-heading"
+    >
+      <div className="public-hostels-inner">
+        <div className="public-hostels-heading">
+          <div>
+            <span className="public-hostel-kicker">FIND YOUR HOSTEL</span>
+            <h2 id="public-hostels-heading">Registered Hostels</h2>
+            <p>Explore hostel profiles registered on Smart Hostel Management System.</p>
+          </div>
+
+          <button
+            className="public-hostel-refresh"
+            type="button"
+            onClick={() => setReloadKey((value) => value + 1)}
+            disabled={loading}
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            Refresh
+          </button>
+        </div>
+
+        <form className="public-hostel-search" onSubmit={search} role="search">
+          <label>
+            <span className="public-hostel-search-icon"><Search size={18} /></span>
+            <input
+              type="search"
+              placeholder="Search by hostel name, city, state or address"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              aria-label="Search registered hostels"
+            />
+          </label>
+          <button type="submit">Search</button>
+        </form>
+
+        <div className="public-hostel-directory-status" aria-live="polite">
+          {loading
+            ? "Loading registered hostels…"
+            : error
+              ? "The hostel directory could not be loaded."
+              : `${pagination.total} active hostel${pagination.total === 1 ? "" : "s"} listed`}
+        </div>
+
+        {error ? (
+          <div className="public-hostel-state public-hostel-error" role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={() => setReloadKey((value) => value + 1)}>
+              Try again
+            </button>
+          </div>
+        ) : null}
+
+        {loading && hostels.length === 0 ? (
+          <div className="public-hostel-state">
+            <Building2 size={30} aria-hidden="true" />
+            <p>Loading hostel profiles from the database…</p>
+          </div>
+        ) : null}
+
+        {!loading && !error && hostels.length === 0 ? (
+          <div className="public-hostel-state">
+            <Building2 size={34} aria-hidden="true" />
+            <h3>No active hostels found</h3>
+            <p>
+              {query
+                ? "Try another name or location."
+                : "Once an owner registers an active hostel, its public profile will appear here."}
+            </p>
+          </div>
+        ) : null}
+
+        {hostels.length > 0 ? (
+          <div className="public-hostel-grid">
+            {hostels.map((hostel) => {
+              const setup = hostel.roomSetup || {};
+              const prices = listedPrices(hostel.pricing);
+              const startingPrice = prices.length
+                ? Math.min(...prices.map((item) => item.amount))
+                : null;
+
+              return (
+                <article className="public-hostel-card" key={hostel._id}>
+                  <div className="public-hostel-card-media">
+                    <HostelPhoto
+                      src={hostel.photoUrl}
+                      alt={`${hostel.name} hostel`}
+                      className="public-hostel-card-photo"
+                    />
+                    <span className="public-hostel-active-label">Active listing</span>
+                  </div>
+
+                  <div className="public-hostel-card-content">
+                    <h3>{hostel.name}</h3>
+                    <p className="public-hostel-card-location">
+                      <MapPin size={16} aria-hidden="true" />
+                      {locationText(hostel)}
+                    </p>
+
+                    <p className="public-hostel-card-address">
+                      {hostel.address || "Address not provided"}
+                    </p>
+
+                    <div className="public-hostel-price-summary">
+                      <span>Monthly rent</span>
+                      <strong>
+                        {startingPrice === null
+                          ? "Contact for price"
+                          : `From ${formatMoney(startingPrice)} / month`}
+                      </strong>
+                    </div>
+                    {(Number(setup.totalRooms) > 0 || Number(setup.totalBeds) > 0) ? (
+                      <div className="public-hostel-card-stats">
+                        {Number(setup.totalRooms) > 0 ? (
+                          <span><Building2 size={15} />{setup.totalRooms} rooms</span>
+                        ) : null}
+                        {Number(setup.totalBeds) > 0 ? (
+                          <span><Bed size={15} />{setup.totalBeds} beds</span>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {hostel.contact ? (
+                      <p className="public-hostel-card-contact">
+                        <Phone size={15} aria-hidden="true" />
+                        <span>{hostel.contact}</span>
+                      </p>
+                    ) : null}
+
+                    {hostel.email ? (
+                      <p className="public-hostel-card-contact">
+                        <Mail size={15} aria-hidden="true" />
+                        <span>{hostel.email}</span>
+                      </p>
+                    ) : null}
+
+                    <div className="public-hostel-action-row public-hostel-action-row-card">
+                      {hostel.contact ? (
+                        <a className="public-hostel-action" href={`tel:${String(hostel.contact).replace(/[^\d+]/g, "")}`} aria-label={`Call ${hostel.name}`}>
+                          <Phone size={15} aria-hidden="true" /> Call
+                        </a>
+                      ) : null}
+                      {whatsappUrl(hostel.contact) ? (
+                        <a className="public-hostel-action public-hostel-action-whatsapp" href={whatsappUrl(hostel.contact)} target="_blank" rel="noreferrer">
+                          <MessageCircle size={15} aria-hidden="true" /> WhatsApp
+                        </a>
+                      ) : null}
+                      {(addressText(hostel) || locationText(hostel) !== "Location not provided") ? (
+                        <a className="public-hostel-action public-hostel-action-maps" href={googleMapsUrl(hostel)} target="_blank" rel="noreferrer">
+                          <Navigation size={15} aria-hidden="true" /> Map
+                        </a>
+                      ) : null}
+                    </div>
+                    <button
+                      className="public-hostel-details-button"
+                      type="button"
+                      onClick={() => setSelected(hostel)}
+                    >
+                      View hostel details
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {!loading && !error && pagination.pages > 1 ? (
+          <nav className="public-hostel-pagination" aria-label="Hostel directory pages">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+            >
+              <ChevronLeft size={17} /> Previous
+            </button>
+            <span>Page {page} of {pagination.pages}</span>
+            <button
+              type="button"
+              disabled={page >= pagination.pages}
+              onClick={() => setPage((value) => Math.min(pagination.pages, value + 1))}
+            >
+              Next <ChevronRight size={17} />
+            </button>
+          </nav>
+        ) : null}
+      </div>
+
+      {selected ? (
+        <HostelDetails hostel={selected} onClose={() => setSelected(null)} />
+      ) : null}
+    </section>
+  );
+}

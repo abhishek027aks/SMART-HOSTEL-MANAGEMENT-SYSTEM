@@ -1,0 +1,245 @@
+SMART HOSTEL MANAGEMENT SYSTEM - MULTI-HOSTEL AUDIT
+Generated: 10/16/2026 12:02:32
+
+
+========== models FILES ==========
+server\src\models\Allocation.js
+server\src\models\Bed.js
+server\src\models\Block.js
+server\src\models\Complaint.js
+server\src\models\EntryExit.js
+server\src\models\FeePayment.js
+server\src\models\Floor.js
+server\src\models\GateQrToken.js
+server\src\models\Hostel.js
+server\src\models\HostelMembership.js
+server\src\models\Outpass.js
+server\src\models\Parent.js
+server\src\models\Room.js
+server\src\models\StaffAudit.js
+server\src\models\Student.js
+server\src\models\User.js
+
+========== middleware FILES ==========
+server\src\middleware\authMiddleware.js
+server\src\middleware\paymentProofUpload.js
+server\src\middleware\photoUpload.js
+server\src\middleware\roleMiddleware.js
+server\src\middleware\tenantMiddleware.js
+
+========== routes FILES ==========
+server\src\routes\allocationRoutes.js
+server\src\routes\authRoutes.js
+server\src\routes\dashboardRoutes.js
+server\src\routes\facilityRoutes.js
+server\src\routes\gateRoutes.js
+server\src\routes\hostelRoutes.js
+server\src\routes\parentRoutes.js
+server\src\routes\paymentRoutes.js
+server\src\routes\staffRoutes.js
+server\src\routes\studentRoutes.js
+server\src\routes\uploadRoutes.js
+
+========== controllers FILES ==========
+server\src\controllers\allocationController.js
+server\src\controllers\authController.js
+server\src\controllers\dashboardController.js
+server\src\controllers\facilityController.js
+server\src\controllers\gateController.js
+server\src\controllers\hostelController.js
+server\src\controllers\parentController.js
+server\src\controllers\paymentController.js
+server\src\controllers\staffController.js
+server\src\controllers\studentController.js
+
+========== services FILES ==========
+server\src\services\allocationService.js
+server\src\services\dashboardService.js
+server\src\services\facilityService.js
+server\src\services\gateService.js
+server\src\services\parentService.js
+server\src\services\paymentService.js
+server\src\services\staffService.js
+server\src\services\studentService.js
+
+========== MULTI-HOSTEL CODE REFERENCES ==========
+server\src\controllers\authController.js:5: const HostelMembership = require("../models/HostelMembership");
+server\src\controllers\authController.js:35: const publicUser = (user, hostelId = null, studentId = null) => ({
+server\src\controllers\authController.js:42: hostelId,
+server\src\controllers\authController.js:210: hostelId: null,
+server\src\controllers\authController.js:236: createdOwner.hostelId = createdHostel._id;
+server\src\controllers\authController.js:239: const membership = new HostelMembership({
+server\src\controllers\authController.js:241: hostelId: createdHostel._id,
+server\src\controllers\authController.js:248: await membership.save({ session });
+server\src\controllers\authController.js:283: const { identifier, password, accessCode, hostelId: requestedHostelId, role: requestedRole } = req.body || {};
+server\src\controllers\authController.js:288: (requestedHostelId !== undefined && (typeof requestedHostelId !== "string" || !requestedHostelId.trim() || requestedHostelId.trim().length > 64)) ||
+server\src\controllers\authController.js:300: let accessCodeHostelId = null;
+server\src\controllers\authController.js:309: accessCodeHostelId = String(hostel._id);
+server\src\controllers\authController.js:311: hostelId: hostel._id,
+server\src\controllers\authController.js:320: hostelId: hostel._id,
+server\src\controllers\authController.js:354: if (accessCodeHostelId && requestedHostelId && requestedHostelId.trim() !== accessCodeHostelId) {
+server\src\controllers\authController.js:358: let selectedHostelId = null;
+server\src\controllers\authController.js:360: const memberships = await HostelMembership.find({
+server\src\controllers\authController.js:365: }).select("hostelId").lean();
+server\src\controllers\authController.js:366: const memberHostelIds = [...new Set(memberships.map((membership) => String(membership.hostelId)))];
+server\src\controllers\authController.js:367: const activeHostels = await Hostel.find({
+server\src\controllers\authController.js:368: _id: { $in: memberHostelIds },
+server\src\controllers\authController.js:372: const activeMemberships = new Set(activeHostels.map((hostel) => String(hostel._id)));
+server\src\controllers\authController.js:374: if (accessCodeHostelId && !activeMemberships.has(accessCodeHostelId)) {
+server\src\controllers\authController.js:378: const requestedId = requestedHostelId?.trim() || accessCodeHostelId || null;
+server\src\controllers\authController.js:379: if (requestedId && !activeMemberships.has(requestedId)) {
+server\src\controllers\authController.js:384: selectedHostelId = requestedId;
+server\src\controllers\authController.js:386: const primaryHostelId = user.hostelId ? String(user.hostelId) : null;
+server\src\controllers\authController.js:387: if (primaryHostelId && activeMemberships.has(primaryHostelId)) {
+server\src\controllers\authController.js:388: selectedHostelId = primaryHostelId;
+server\src\controllers\authController.js:389: } else if (activeMemberships.size > 0) {
+server\src\controllers\authController.js:390: selectedHostelId = [...activeMemberships].sort()[0];
+server\src\controllers\authController.js:395: } else if (requestedHostelId) {
+server\src\controllers\authController.js:396: const activeHostel = await Hostel.findOne({
+server\src\controllers\authController.js:397: _id: requestedHostelId.trim(),
+server\src\controllers\authController.js:401: if (!activeHostel) {
+server\src\controllers\authController.js:404: selectedHostelId = String(activeHostel._id);
+server\src\controllers\authController.js:407: const account = publicUser(user, selectedHostelId, studentId);
+server\src\controllers\authController.js:447: return res.status(200).json({ status: "success", data: { user: publicUser(user, req.auth.hostelId) } });
+server\src\controllers\hostelController.js:9: const hostelScope = require("../utils/hostelScope");
+server\src\controllers\hostelController.js:32: const hostel = await Hostel.findOne(hostelScope(req, { isDeleted: { $ne: true } })).select(fields).lean();
+server\src\controllers\hostelController.js:155: const hostel = await Hostel.findOne(hostelScope(req, { isDeleted: { $ne: true } }));
+server\src\controllers\hostelController.js:169: req.tenant = { hostelId: req.params.id };
+server\src\controllers\hostelController.js:259: const hostelId = hostel._id;
+server\src\controllers\hostelController.js:260: const activeStructure = { hostelId, isDeleted: { $ne: true } };
+server\src\controllers\hostelController.js:262: const activeAllocation = { hostelId, status: "ACTIVE" };
+server\src\middleware\authMiddleware.js:3: const HostelMembership = require("../models/HostelMembership");
+server\src\middleware\authMiddleware.js:33: .select("name email mobile photoUrl role hostelId status isDeleted")
+server\src\middleware\authMiddleware.js:40: let memberships = [];
+server\src\middleware\authMiddleware.js:42: const membershipRecords = await HostelMembership.find({
+server\src\middleware\authMiddleware.js:47: }).select("hostelId").lean();
+server\src\middleware\authMiddleware.js:48: const memberHostelIds = [...new Set(membershipRecords.map((membership) => String(membership.hostelId)))];
+server\src\middleware\authMiddleware.js:49: const activeHostels = memberHostelIds.length > 0
+server\src\middleware\authMiddleware.js:51: _id: { $in: memberHostelIds },
+server\src\middleware\authMiddleware.js:56: memberships = activeHostels.map((hostel) => String(hostel._id));
+server\src\middleware\authMiddleware.js:58: if (!tokenPayload.hostelId || !memberships.includes(tokenPayload.hostelId)) {
+server\src\middleware\authMiddleware.js:61: } else if (tokenPayload.hostelId !== null) {
+server\src\middleware\authMiddleware.js:62: const activeHostel = await Hostel.findOne({
+server\src\middleware\authMiddleware.js:63: _id: tokenPayload.hostelId,
+server\src\middleware\authMiddleware.js:67: if (!activeHostel) {
+server\src\middleware\authMiddleware.js:76: hostelId: tokenPayload.hostelId,
+server\src\middleware\authMiddleware.js:94: hostelId: tokenPayload.hostelId,
+server\src\middleware\authMiddleware.js:95: memberships,
+server\src\middleware\tenantMiddleware.js:4: const tenantForbidden = (res) => res.status(403).json({
+server\src\middleware\tenantMiddleware.js:9: const tenantMiddleware = async (req, res, next) => {
+server\src\middleware\tenantMiddleware.js:17: const requestedHostelId = req.get("x-hostel-id");
+server\src\middleware\tenantMiddleware.js:20: const selectedHostelId = requestedHostelId || req.auth.hostelId;
+server\src\middleware\tenantMiddleware.js:21: if (!selectedHostelId) {
+server\src\middleware\tenantMiddleware.js:22: req.tenant = null;
+server\src\middleware\tenantMiddleware.js:28: _id: selectedHostelId,
+server\src\middleware\tenantMiddleware.js:34: return tenantForbidden(res);
+server\src\middleware\tenantMiddleware.js:37: req.tenant = { hostelId: String(hostel._id) };
+server\src\middleware\tenantMiddleware.js:41: return tenantForbidden(res);
+server\src\middleware\tenantMiddleware.js:47: const memberships = req.auth.memberships || [];
+server\src\middleware\tenantMiddleware.js:48: const selectedHostelId = requestedHostelId || req.auth.hostelId;
+server\src\middleware\tenantMiddleware.js:50: if (!selectedHostelId || !memberships.includes(selectedHostelId)) {
+server\src\middleware\tenantMiddleware.js:51: return tenantForbidden(res);
+server\src\middleware\tenantMiddleware.js:54: req.tenant = { hostelId: selectedHostelId };
+server\src\middleware\tenantMiddleware.js:58: const requireTenant = (req, res, next) => {
+server\src\middleware\tenantMiddleware.js:59: if (!req.tenant?.hostelId) {
+server\src\middleware\tenantMiddleware.js:70: requireTenant,
+server\src\middleware\tenantMiddleware.js:71: tenantMiddleware
+server\src\models\HostelMembership.js:4: const hostelMembershipSchema = new mongoose.Schema(
+server\src\models\HostelMembership.js:7: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+server\src\models\HostelMembership.js:16: hostelMembershipSchema.index({ userId: 1, hostelId: 1 }, {
+server\src\models\HostelMembership.js:20: hostelMembershipSchema.index({ hostelId: 1, role: 1, status: 1 });
+server\src\models\HostelMembership.js:22: module.exports = mongoose.model("HostelMembership", hostelMembershipSchema);
+server\src\models\Parent.js:5: hostelId: {
+server\src\models\Parent.js:28: studentIds: {
+server\src\models\Parent.js:57: { hostelId: 1, parentId: 1 },
+server\src\models\Parent.js:62: { hostelId: 1, userId: 1 },
+server\src\models\Parent.js:69: parentSchema.index({ hostelId: 1, studentIds: 1, isDeleted: 1 });
+server\src\models\StaffAudit.js:4: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+server\src\models\Student.js:5: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+server\src\models\Student.js:22: studentSchema.index({ hostelId: 1, studentId: 1 }, { unique: true });
+server\src\models\User.js:7: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", default: null, index: true },
+server\src\routes\hostelRoutes.js:6: const { requireTenant, tenantMiddleware } = require("../middleware/tenantMiddleware");
+server\src\routes\hostelRoutes.js:10: router.get("/current", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER, ROLES.WARDEN), tenantMiddleware, requireTenant, controller.getCurrent);
+server\src\routes\hostelRoutes.js:11: router.patch("/current", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER), tenantMiddleware, requireTenant, controller.updateCurrent);
+server\src\routes\parentRoutes.js:4: const { requireTenant, tenantMiddleware } = require("../middleware/tenantMiddleware");
+server\src\routes\parentRoutes.js:10: router.get("/me", requireAuth, requireRoles(ROLES.PARENT), tenantMiddleware, requireTenant, controller.getMine);
+server\src\routes\parentRoutes.js:14: tenantMiddleware,
+server\src\routes\parentRoutes.js:15: requireTenant
+server\src\routes\staffRoutes.js:4: const { requireTenant, tenantMiddleware } = require("../middleware/tenantMiddleware");
+server\src\routes\staffRoutes.js:9: router.use(requireAuth, requireRoles(ROLES.OWNER), tenantMiddleware, requireTenant);
+server\src\routes\studentRoutes.js:6: const { requireTenant, tenantMiddleware } = require("../middleware/tenantMiddleware");
+server\src\routes\studentRoutes.js:9: router.use(requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER, ROLES.WARDEN), tenantMiddleware, requireTenant);
+server\src\services\parentService.js:5: const HostelMembership = require("../models/HostelMembership");
+server\src\services\parentService.js:23: ? ["name", "email", "mobile", "photoUrl", "relationship", "studentIds", "status", "password"]
+server\src\services\parentService.js:24: : ["parentId", "name", "email", "mobile", "photoUrl", "relationship", "studentIds", "status", "password"];
+server\src\services\parentService.js:71: if (key === "studentIds") {
+server\src\services\parentService.js:76: throw httpError(400, "Every studentIds entry must be a valid student identifier.");
+server\src\services\parentService.js:89: for (const key of ["parentId", "name", "relationship", "studentIds", "password"]) {
+server\src\services\parentService.js:104: const findValidStudents = async (req, studentIds, session) => {
+server\src\services\parentService.js:106: _id: { $in: studentIds },
+server\src\services\parentService.js:107: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:115: if (students.length !== studentIds.length) {
+server\src\services\parentService.js:147: await findValidStudents(req, data.studentIds, session);
+server\src\services\parentService.js:151: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:164: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:168: studentIds: data.studentIds,
+server\src\services\parentService.js:174: const membership = new HostelMembership({
+server\src\services\parentService.js:176: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:182: await membership.save({ session });
+server\src\services\parentService.js:192: studentIds: parent.studentIds.map(String),
+server\src\services\parentService.js:227: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:235: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:250: path: "studentIds",
+server\src\services\parentService.js:251: match: { hostelId: req.tenant.hostelId, isDeleted: { $ne: true } },
+server\src\services\parentService.js:271: studentIds: (parent.studentIds || []).map((student) => ({
+server\src\services\parentService.js:294: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:299: path: "studentIds",
+server\src\services\parentService.js:300: match: { hostelId: req.tenant.hostelId, isDeleted: { $ne: true } },
+server\src\services\parentService.js:317: studentIds: (parent.studentIds || []).map((student) => ({
+server\src\services\parentService.js:344: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:359: if (data.studentIds) {
+server\src\services\parentService.js:360: await findValidStudents(req, data.studentIds, session);
+server\src\services\parentService.js:361: parent.studentIds = data.studentIds;
+server\src\services\parentService.js:396: const membership = await HostelMembership.findOne({
+server\src\services\parentService.js:398: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:403: if (membership) {
+server\src\services\parentService.js:404: membership.status = data.status;
+server\src\services\parentService.js:405: await membership.save({ session });
+server\src\services\parentService.js:420: studentIds: parent.studentIds.map(String),
+server\src\services\parentService.js:454: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:469: const membership = await HostelMembership.findOne({
+server\src\services\parentService.js:471: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:484: if (membership) {
+server\src\services\parentService.js:485: membership.status = "INACTIVE";
+server\src\services\parentService.js:486: membership.isDeleted = true;
+server\src\services\parentService.js:487: await membership.save({ session });
+server\src\services\parentService.js:505: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:510: path: "studentIds",
+server\src\services\parentService.js:512: hostelId: req.tenant.hostelId,
+server\src\services\parentService.js:530: students: (parent.studentIds || [])
+server\src\services\staffService.js:3: const HostelMembership = require("../models/HostelMembership");
+server\src\services\staffService.js:7: const hostelScope = require("../utils/hostelScope");
+server\src\services\staffService.js:45: hostelId: req.tenant.hostelId,
+server\src\services\staffService.js:64: const filter = hostelScope(req, { role: { $in: req.query.role ? [req.query.role] : STAFF_ROLES }, isDeleted: { $ne: true } });
+server\src\services\staffService.js:79: membershipId: "$_id",
+server\src\services\staffService.js:92: const [result = { items: [], metadata: [] }] = await HostelMembership.aggregate(pipeline).allowDiskUse(true);
+server\src\services\staffService.js:94: return { items: result.items.map((item) => ({ ...item, _id: String(item._id), membershipId: String(item.membershipId) })), pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
+server\src\services\staffService.js:99: const membership = await HostelMembership.findOne(hostelScope(req, {
+server\src\services\staffService.js:104: if (!membership?.userId || membership.userId.isDeleted) throw httpError(404, "Staff member not found in this hostel.");
+server\src\services\staffService.js:106: _id: String(membership.userId._id),
+server\src\services\staffService.js:107: membershipId: String(membership._id),
+server\src\services\staffService.js:108: name: membership.userId.name,
+server\src\services\staffService.js:109: email: membership.userId.email || "",
+server\src\services\staffService.js:110: mobile: membership.userId.mobile || "",
+server\src\services\staffService.js:111: photoUrl: membership.userId.photoUrl || "",
+server\src\services\staffService.js:112: role: membership.role,
+server\src\services\staffService.js:113: status: membership.status
+server\src\services\staffService.js:129: hostelId: req.tenant.hostelId,
+server\src\services\staffService.js:140: const membership = new HostelMembership({
+server\src\services\staffService.js:142: hostelId: req.tenant.hostelId,
+server\src\services\staffService.js:148: await membership.save({ session });
+server\src\services\staffService.js:149: await audit(req, user._id, "STAFF_CREATED", { role: data.role, status: membership.status }, session);
+server\src\services\staffService.js:150: result = { _id: String(user._id), membershipId: String(membership._id), name: user.name, email: user.email, mobile: user.mobile, photoUrl: user.photoUrl, role: data.role, status: membership.status };
+server\src\services\staffService.js:165: const membership = await HostelMembership.findOne(hostelScope(req, {
+server\src\services\staffService.js:170: if (!membership) throw httpError(404, "Staff member not found in this hostel.");
+server\src\services\staffService.js:171: const user = await User.findOne({ _id: membership.userId, isDeleted: { $ne: true } });

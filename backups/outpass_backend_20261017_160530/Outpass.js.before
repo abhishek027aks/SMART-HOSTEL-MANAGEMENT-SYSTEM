@@ -1,0 +1,20 @@
+const mongoose = require("mongoose");
+
+const outpassSchema = new mongoose.Schema(
+    {
+        hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+        studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true, index: true },
+        reason: { type: String, required: true, trim: true },
+        destination: { type: String, trim: true, default: "" },
+        status: {
+            type: String,
+            enum: ["PENDING", "APPROVED", "REJECTED", "EXPIRED", "COMPLETED"],
+            default: "PENDING",
+            index: true
+        },
+        isDeleted: { type: Boolean, default: false, index: true }
+    },
+    { timestamps: true }
+);
+
+module.exports = mongoose.model("Outpass", outpassSchema);

@@ -1,0 +1,178 @@
+import { useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
+import { LogOut, RefreshCw, ShieldCheck } from "lucide-react";
+import { apiRequest } from "../services/api.js";
+import PaymentPortal from "../components/PaymentPortal.jsx";
+
+export default function StudentQrPage({ token, logout }) {
+  const [retryKey, setRetryKey] = useState(0);
+  const [qrImage, setQrImage] = useState("");
+  const [expiresAt, setExpiresAt] = useState(null);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+  const hasQrRef = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    let refreshTimer;
+    let controller;
+
+    const issueQr = async () => {
+      controller = new AbortController();
+
+      setStatus(hasQrRef.current ? "refreshing" : "loading");
+      setQrImage("");
+      setExpiresAt(null);
+      hasQrRef.current = false;
+      setError("");
+
+      try {
+        const response = await apiRequest("/api/gate/qr-token", {
+          method: "POST",
+          token,
+          signal: controller.signal
+        });
+
+        const data = response?.data;
+        const expiry = Date.parse(data?.expiresAt);
+
+        if (
+          typeof data?.token !== "string" ||
+          !/^[A-Za-z0-9_-]{43}$/.test(data.token) ||
+          !Number.isFinite(expiry) ||
+          expiry <= Date.now()
+        ) {
+          throw new Error("The server returned an invalid or expired QR token.");
+        }
+
+        const image = await QRCode.toDataURL(data.token, {
+          errorCorrectionLevel: "M",
+          margin: 2,
+          width: 280
+        });
+
+        if (!active) return;
+
+        setQrImage(image);
+        hasQrRef.current = true;
+        setExpiresAt(expiry);
+        setStatus("ready");
+        setError("");
+
+        // Refresh before the 60-second token expires.
+        refreshTimer = window.setTimeout(issueQr, 45_000);
+      } catch (requestError) {
+        if (!active || requestError.name === "AbortError") return;
+
+        setStatus("error");
+        setError(requestError.message || "Unable to generate your QR code.");
+      }
+    };
+
+    issueQr();
+
+    return () => {
+      active = false;
+      if (refreshTimer) window.clearTimeout(refreshTimer);
+      if (controller) controller.abort();
+    };
+  }, [token, retryKey]);
+
+  useEffect(() => {
+    if (!expiresAt) {
+      setSecondsLeft(0);
+      return undefined;
+    }
+
+    const updateCountdown = () => {
+      setSecondsLeft(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)));
+    };
+
+    updateCountdown();
+    const intervalId = window.setInterval(updateCountdown, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [expiresAt]);
+
+  const busy = status === "loading" || status === "refreshing";
+
+  return (
+    <main className="auth-page qr-page">
+      <section className="auth-card student-qr-card">
+        <div className="auth-brand-mark">
+          <ShieldCheck size={28} aria-hidden="true" />
+        </div>
+
+        <h1>My Hostel Gate QR</h1>
+        <p className="auth-description">
+          Show this QR to the authorized gate staff when entering or leaving your hostel.
+        </p>
+
+        <div
+          className="student-qr-frame"
+          aria-label="Your personal one-time gate QR code"
+          aria-busy={busy}
+        >
+          {qrImage ? (
+            <img
+              src={qrImage}
+              alt="Your temporary hostel gate QR code"
+              width="280"
+              height="280"
+              style={{ display: "block", width: "100%", maxWidth: "280px", height: "auto" }}
+            />
+          ) : (
+            <p role="status" aria-live="polite">
+              {status === "error" ? "QR unavailable" : "Generating secure QR..."}
+            </p>
+          )}
+        </div>
+
+        {status === "ready" ? (
+          <p role="status" aria-live="polite" className="auth-description">
+            {secondsLeft > 0
+              ? `QR expires in ${secondsLeft} seconds. It refreshes automatically while this page stays open.`
+              : "This QR may have expired. Generate a new one before presenting it."}
+          </p>
+        ) : null}
+
+        {status === "refreshing" ? (
+          <p role="status" aria-live="polite" className="auth-description">
+            Refreshing QR code...
+          </p>
+        ) : null}
+
+        {error ? (
+          <p role="alert" className="auth-description">
+            {error}
+          </p>
+        ) : null}
+
+        <button
+          className="auth-submit"
+          type="button"
+          onClick={() => setRetryKey((key) => key + 1)}
+          disabled={busy}
+        >
+          <RefreshCw size={16} aria-hidden="true" />
+          {busy ? "Please wait..." : "Generate new QR"}
+        </button>
+
+        <button
+          className="auth-logout"
+          type="button"
+          onClick={logout}
+          style={{ marginTop: "12px" }}
+        >
+          <LogOut size={16} aria-hidden="true" />
+          Sign Out
+        </button>
+
+        <p className="auth-description">
+          This QR is single-use. After a successful scan, request a fresh QR for your next gate event.
+        </p>
++
+    </main>
+  );
+}

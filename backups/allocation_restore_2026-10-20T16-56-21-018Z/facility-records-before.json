@@ -1,0 +1,61 @@
+[
+  {
+    "type": "Block",
+    "document": {
+      "_id": "6ac5f2757b923f03f2ecf304",
+      "hostelId": "6ac5e46244fd3aa08d8cc055",
+      "name": "b",
+      "status": "INACTIVE",
+      "isDeleted": true,
+      "createdAt": "2026-10-07T07:19:17.585Z",
+      "updatedAt": "2026-10-16T04:59:49.625Z",
+      "__v": 0
+    }
+  },
+  {
+    "type": "Floor",
+    "document": {
+      "_id": "6ac5f2817b923f03f2ecf305",
+      "hostelId": "6ac5e46244fd3aa08d8cc055",
+      "blockId": "6ac5f2757b923f03f2ecf304",
+      "number": 5,
+      "name": "A1",
+      "status": "INACTIVE",
+      "isDeleted": true,
+      "createdAt": "2026-10-07T07:19:29.419Z",
+      "updatedAt": "2026-10-16T04:59:45.508Z",
+      "__v": 0
+    }
+  },
+  {
+    "type": "Room",
+    "document": {
+      "_id": "6ac5f2987b923f03f2ecf306",
+      "hostelId": "6ac5e46244fd3aa08d8cc055",
+      "blockId": "6ac5f2757b923f03f2ecf304",
+      "floorId": "6ac5f2817b923f03f2ecf305",
+      "roomNumber": "501",
+      "roomType": "Standard",
+      "capacity": 2,
+      "status": "MAINTENANCE",
+      "isDeleted": true,
+      "createdAt": "2026-10-07T07:19:52.847Z",
+      "updatedAt": "2026-10-16T04:59:41.668Z",
+      "__v": 0
+    }
+  },
+  {
+    "type": "Bed",
+    "document": {
+      "_id": "6ac5f2a57b923f03f2ecf307",
+      "hostelId": "6ac5e46244fd3aa08d8cc055",
+      "roomId": "6ac5f2987b923f03f2ecf306",
+      "bedNumber": "1",
+      "status": "MAINTENANCE",
+      "isDeleted": true,
+      "createdAt": "2026-10-07T07:20:05.430Z",
+      "updatedAt": "2026-10-16T04:56:28.224Z",
+      "__v": 0
+    }
+  }
+]

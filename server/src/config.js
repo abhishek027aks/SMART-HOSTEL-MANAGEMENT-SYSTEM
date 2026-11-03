@@ -1,0 +1,50 @@
+const path = require("node:path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", "..", ".env") });
+
+const parseOrigins = (value, fallback) => {
+    if (!value) {
+        return fallback;
+    }
+
+    return value
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+};
+
+const rawPort = process.env.PORT || "5000";
+const jsonBodyLimit = process.env.JSON_BODY_LIMIT || "1mb";
+const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart_hostel_management";
+const corsOrigin = parseOrigins(
+    process.env.CORS_ORIGIN,
+    [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174"
+    ]
+);
+const jwtSecret = process.env.JWT_SECRET || "";
+
+const port = Number.parseInt(rawPort, 10);
+
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error("PORT must be a valid TCP port between 1 and 65535.");
+}
+
+const config = {
+    nodeEnv: process.env.NODE_ENV || "development",
+    port,
+    jsonBodyLimit,
+    mongoUri,
+    corsOrigin,
+    jwtSecret,
+    googleClientId: process.env.GOOGLE_CLIENT_ID || "",
+    validateAuthConfig() {
+        if (Buffer.byteLength(jwtSecret, "utf8") < 32) {
+            throw new Error("JWT_SECRET must be configured with at least 32 bytes.");
+        }
+    }
+};
+
+module.exports = config;

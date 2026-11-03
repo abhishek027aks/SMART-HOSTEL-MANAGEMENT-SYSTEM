@@ -1,0 +1,1730 @@
+:root {
+  color-scheme: light;
+  --shms-ink: #17243c;
+  --shms-muted: #69778e;
+  --shms-primary: #2457d6;
+  --shms-primary-dark: #173fa8;
+  --shms-border: #e1e7f0;
+  --shms-surface: #ffffff;
+  --shms-background: #f4f7fc;
+  --shms-radius: 18px;
+  --shms-shadow: 0 12px 32px rgba(20, 41, 80, 0.07);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  color: var(--shms-ink);
+  background: var(--shms-background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(36, 87, 214, 0.26);
+  outline-offset: 3px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Authenticated application shell */
+.app-shell {
+  min-height: 100vh;
+  background: var(--shms-background);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #14213b 0%, #101b31 100%);
+  color: #f7f9ff;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 8px 0 28px rgba(16, 31, 58, 0.07);
+}
+
+.brand-mark {
+  border-radius: 13px;
+}
+
+.nav-list a {
+  border-radius: 11px;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.nav-list a:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.content {
+  min-width: 0;
+}
+
+.topbar,
+.dashboard-topbar {
+  border: 1px solid var(--shms-border);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 5px 18px rgba(20, 41, 80, 0.035);
+}
+
+.dashboard-heading h1,
+.panel-title,
+.gate-trend-title {
+  color: var(--shms-ink);
+  letter-spacing: -0.025em;
+}
+
+.hero-strip {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.hostel-summary-card,
+.mini-panel,
+.panel,
+.metrics-grid > *,
+.operations-grid > *,
+.dashboard-grid > * {
+  border-radius: var(--shms-radius);
+}
+
+.panel,
+.mini-panel,
+.hostel-summary-card,
+.metrics-grid > *,
+.operations-grid > *,
+.dashboard-grid > * {
+  border-color: var(--shms-border);
+}
+
+.panel,
+.mini-panel,
+.hostel-summary-card {
+  box-shadow: var(--shms-shadow);
+}
+
+.dashboard-refresh-button,
+.dashboard-range-control,
+.icon-button {
+  border-radius: 11px;
+}
+
+/* Public landing page and authentication */
+.landing-page {
+  min-height: 100vh;
+  color: var(--shms-ink);
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(218, 231, 255, 0.75), transparent 36%),
+    linear-gradient(180deg, #f8faff 0%, #f2f6fc 100%);
+}
+
+.landing-header {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(225, 231, 240, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.brand-mark-home {
+  border-radius: 13px;
+}
+
+.hero-copy-panel {
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(19, 39, 78, 0.13);
+}
+
+.login-panel {
+  min-width: 0;
+}
+
+.login-box {
+  background: var(--shms-surface);
+  border: 1px solid var(--shms-border);
+  border-radius: 23px;
+  box-shadow: 0 20px 55px rgba(20, 41, 80, 0.10);
+}
+
+.login-card-heading {
+  letter-spacing: -0.025em;
+}
+
+.login-fields,
+.registration-fields {
+  min-width: 0;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.payment-field input,
+.payment-field select,
+.public-hostel-search input {
+  max-width: 100%;
+  border-radius: 11px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.payment-field input:focus,
+.payment-field select:focus {
+  border-color: var(--shms-primary);
+  box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.10);
+}
+
+.role-grid > *,
+.feature-card,
+.trust-card {
+  border-radius: 15px;
+}
+
+.auth-error {
+  border-radius: 11px;
+}
+
+.auth-submit,
+.landing-submit,
+.primary-action,
+.nav-login-btn,
+.secondary-action {
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.feature-card,
+.trust-card {
+  border: 1px solid var(--shms-border);
+  background: rgba(255, 255, 255, 0.91);
+  box-shadow: 0 7px 22px rgba(20, 41, 80, 0.045);
+}
+
+/* Public hostel directory */
+.public-hostels-section {
+  background: transparent;
+}
+
+.public-hostel-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--shms-border);
+  border-radius: 19px;
+  background: var(--shms-surface);
+  box-shadow: 0 8px 25px rgba(20, 41, 80, 0.055);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.public-hostel-card:hover {
+  transform: translateY(-3px);
+  border-color: #c8d6f3;
+  box-shadow: 0 16px 34px rgba(20, 41, 80, 0.105);
+}
+
+.public-hostel-card-photo {
+  max-width: 100%;
+}
+
+.public-hostel-search input {
+  background: #fff;
+  border-color: var(--shms-border);
+}
+
+.public-hostel-details-button,
+.public-hostel-action {
+  border-radius: 10px;
+}
+
+.public-hostel-modal {
+  max-width: min(760px, calc(100vw - 28px));
+  border-radius: 22px;
+  overflow: auto;
+}
+
+/* Payment cards and forms */
+.payment-portal,
+.payment-management {
+  min-width: 0;
+}
+
+.payment-card,
+.payment-invoice-form,
+.payment-empty {
+  border: 1px solid var(--shms-border);
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(20, 41, 80, 0.05);
+}
+
+.payment-upi-box {
+  border-radius: 14px;
+}
+
+.payment-button {
+  border-radius: 11px;
+  font-weight: 700;
+}
+
+.payment-status {
+  border-radius: 999px;
+}
+
+/* Avoid layout overflow on smaller screens */
+img,
+svg {
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.table-scroll,
+.table-scroll table {
+  max-width: 100%;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .public-hostel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .nav-list a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .content {
+    min-width: 0;
+    padding: 14px;
+  }
+
+  .topbar,
+  .dashboard-topbar {
+    border-radius: 13px;
+  }
+
+  .hero-strip {
+    border-radius: 17px;
+  }
+
+  .landing-header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero-copy-panel,
+  .login-box {
+    border-radius: 19px;
+  }
+
+  .public-hostels-inner {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .public-hostel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .payment-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .content {
+    padding: 10px;
+  }
+
+  .public-hostel-pagination {
+    flex-wrap: wrap;
+  }
+
+  .payment-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* SHMS VISUAL CORRECTION V1 */
+
+/* Dark header with readable navigation and brand */
+.landing-header {
+  background: #071f38 !important;
+  color: #f8fbff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(7, 31, 56, 0.16);
+}
+
+.landing-header .brand-block,
+.landing-header .brand-copy strong,
+.landing-header .brand-copy span,
+.landing-header .main-nav .nav-pill {
+  color: #f8fbff !important;
+}
+
+.landing-header .brand-mark-home {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.landing-header .main-nav .nav-pill {
+  opacity: 0.88;
+}
+
+.landing-header .main-nav .nav-pill:hover,
+.landing-header .main-nav .nav-pill.active {
+  color: #ffffff !important;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Restore dark, readable feature tiles over the hero photo */
+.feature-grid .feature-card {
+  color: #f8fbff !important;
+  background: rgba(8, 29, 49, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.feature-grid .feature-card .feature-label,
+.feature-grid .feature-card strong,
+.feature-grid .feature-card span {
+  color: #f8fbff !important;
+}
+
+/* Keep the lower benefit cards light, with readable text */
+.trust-grid .trust-card {
+  color: #17243c;
+  background: #ffffff;
+  border: 1px solid #e1e7f0;
+  box-shadow: 0 8px 24px rgba(20, 41, 80, 0.055);
+}
+
+.trust-grid .trust-card h3,
+.trust-grid .trust-card strong {
+  color: #17243c;
+}
+
+.trust-grid .trust-card p,
+.trust-grid .trust-card span {
+  color: #69778e;
+}
+
+/* Prevent the login form and role cards from being clipped */
+.login-panel {
+  min-width: 0;
+  overflow: visible;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.login-form-content {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.login-fields,
+.role-select-wrap {
+  min-width: 0;
+  overflow: visible;
+}
+
+.role-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.role-grid > * {
+  min-width: 0;
+}
+
+/* Better use of space for hostel listings */
+.public-hostel-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+  align-items: stretch;
+  gap: 22px;
+}
+
+.public-hostel-card {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 760px) {
+  .landing-header-inner {
+    gap: 10px;
+  }
+
+  .login-box {
+    max-width: 100%;
+  }
+
+  .role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .login-box {
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+  }
+}
+
+/* SHMS LOGIN LAYOUT FIX V2 */
+
+/* Let the login card grow to fit all five role choices */
+.landing-page .login-panel .login-box {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  width: min(100%, 420px);
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Do not clip the form content or its second role-card row */
+.landing-page .login-panel .login-box > form.landing-form {
+  display: flex;
+  flex: 0 0 auto !important;
+  flex-direction: column;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  gap: 10px;
+  overflow: visible !important;
+}
+
+.landing-page .login-panel .login-form-content {
+  display: grid;
+  flex: 0 0 auto !important;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding-right: 0;
+  overflow: visible !important;
+}
+
+.landing-page .login-panel .login-fields {
+  gap: 9px;
+}
+
+.landing-page .login-panel .login-mode-toggle {
+  flex: 0 0 auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.landing-page .login-panel .role-select-wrap {
+  min-width: 0;
+  margin-top: 4px;
+  padding: 0;
+  overflow: visible !important;
+}
+
+.landing-page .login-panel .role-select-wrap legend {
+  margin-bottom: 7px;
+}
+
+.landing-page .login-panel .role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.landing-page .login-panel .role-option {
+  min-width: 0;
+}
+
+.landing-page .login-panel .auth-submit.landing-submit {
+  position: relative;
+  flex: 0 0 auto !important;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 2px;
+}
+
+/* On short desktop screens, scroll the complete card instead of overlapping */
+@media (max-height: 760px) and (min-width: 761px) {
+  .landing-page .login-panel .login-box {
+    max-height: calc(100dvh - 48px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Give role cards enough width on phones */
+@media (max-width: 760px) {
+  .landing-page .login-panel .login-box {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .landing-page .login-panel .role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* SHMS REGISTRATION UI V1 */
+
+/* Desktop registration card: fixed viewport, independently scrollable fields */
+.landing-page .login-panel .login-box:has(> form.register-form) {
+  display: flex;
+  flex-direction: column;
+  height: min(700px, calc(100dvh - 40px)) !important;
+  max-height: calc(100dvh - 40px) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.landing-page .login-panel .login-box > form.register-form {
+  display: flex;
+  flex: 1 1 auto !important;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: hidden !important;
+}
+
+.landing-page .login-panel .register-form .registration-fields {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 14px;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 2px 7px 14px 0;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b5c6df transparent;
+}
+
+.landing-page .login-panel .registration-section {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #e1e7f0;
+  border-radius: 15px;
+  background: #f9fbff;
+}
+
+.landing-page .login-panel .registration-section h2 {
+  margin: 0 0 13px;
+  color: #17243c;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}
+
+.landing-page .login-panel .registration-section .form-field {
+  min-width: 0;
+  margin-bottom: 12px;
+}
+
+.landing-page .login-panel .registration-section .form-field:last-child {
+  margin-bottom: 0;
+}
+
+.landing-page .login-panel .registration-section input,
+.landing-page .login-panel .registration-section select,
+.landing-page .login-panel .registration-section textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+.landing-page .login-panel .register-form .auth-error {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.landing-page .login-panel .register-form .auth-submit {
+  flex: 0 0 auto !important;
+  width: 100%;
+  min-height: 46px;
+}
+
+/* Registration is a natural full-page form on smaller screens */
+@media (max-width: 760px) {
+  .landing-page .login-panel .login-box:has(> form.register-form) {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .landing-page .login-panel .login-box > form.register-form {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .landing-page .login-panel .register-form .registration-fields {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0;
+  }
+
+  .landing-page .login-panel .registration-section {
+    padding: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .login-panel .registration-fields {
+    scroll-behavior: auto;
+  }
+}
+
+/* SHMS HOSTEL DIRECTORY UPGRADE V1 */
+
+/* Directory section */
+.public-hostels-section {
+  padding: clamp(42px, 5.5vw, 76px) 0;
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(224, 234, 255, 0.45), transparent 36%),
+    #f5f8fd;
+}
+
+.public-hostels-section .public-hostels-inner {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3vw, 34px);
+}
+
+.public-hostels-section .public-hostels-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.public-hostels-section .public-hostels-heading h2 {
+  max-width: 760px;
+  margin: 5px 0 8px;
+  color: #17243c;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.public-hostels-section .public-hostels-heading p {
+  max-width: 680px;
+  color: #69778e;
+  line-height: 1.65;
+}
+
+/* Search and refresh controls */
+.public-hostels-section .public-hostel-search {
+  position: relative;
+  min-width: min(100%, 280px);
+}
+
+.public-hostels-section .public-hostel-search input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 15px 12px 44px;
+  border: 1px solid #dce4f0;
+  border-radius: 13px;
+  background: #ffffff;
+  color: #17243c;
+  box-shadow: 0 4px 14px rgba(20, 41, 80, 0.035);
+}
+
+.public-hostels-section .public-hostel-search input:focus {
+  border-color: #6c91e8;
+  outline: 3px solid rgba(36, 87, 214, 0.11);
+}
+
+.public-hostels-section .public-hostel-refresh,
+.public-hostels-section .public-hostel-pagination button {
+  min-height: 40px;
+  border: 1px solid #dce4f0;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #1c3550;
+  font-weight: 700;
+}
+
+.public-hostels-section .public-hostel-refresh:hover,
+.public-hostels-section .public-hostel-pagination button:hover:not(:disabled) {
+  border-color: #b7c9ed;
+  background: #f0f5ff;
+}
+
+/* Consistent responsive card grid */
+.public-hostels-section .public-hostel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 285px), 1fr));
+  align-items: stretch;
+  gap: 22px;
+}
+
+.public-hostels-section .public-hostel-card {
+  display: flex;
+  min-width: 0;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e0e7f1;
+  border-radius: 19px;
+  background: #ffffff;
+  box-shadow: 0 7px 22px rgba(20, 41, 80, 0.055);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.public-hostels-section .public-hostel-card:hover {
+  transform: translateY(-3px);
+  border-color: #c6d5f0;
+  box-shadow: 0 16px 34px rgba(20, 41, 80, 0.11);
+}
+
+.public-hostels-section .public-hostel-card-media {
+  position: relative;
+  height: 200px;
+  min-height: 200px;
+  overflow: hidden;
+  background: #eaf0fa;
+}
+
+.public-hostels-section .public-hostel-card-media img,
+.public-hostels-section .public-hostel-card-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.public-hostels-section .public-hostel-card-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+}
+
+.public-hostels-section .public-hostel-card-content h3 {
+  margin: 0;
+  color: #17243c;
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.public-hostels-section .public-hostel-card-location,
+.public-hostels-section .public-hostel-card-address {
+  color: #69778e;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.public-hostels-section .public-hostel-active-label {
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+/* Highlight the listed rent without inventing or changing prices */
+.public-hostels-section .public-hostel-price-summary {
+  padding: 12px 13px;
+  border: 1px solid #e0e9fb;
+  border-radius: 13px;
+  background: #f4f7ff;
+  color: #17243c;
+}
+
+.public-hostels-section .public-hostel-price-summary strong {
+  color: #1746ad;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.public-hostels-section .public-hostel-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.public-hostels-section .public-hostel-card-stats span {
+  max-width: 100%;
+  padding: 6px 9px;
+  border: 1px solid #e5ebf4;
+  border-radius: 9px;
+  background: #f8faff;
+  color: #52647d;
+  font-size: 0.8rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.public-hostels-section .public-hostel-card-contact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  color: #52647d;
+  font-size: 0.86rem;
+}
+
+.public-hostels-section .public-hostel-action-row-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.public-hostels-section .public-hostel-action-row-card > *,
+.public-hostels-section .public-hostel-details-button {
+  min-width: 0;
+  border-radius: 11px;
+  font-weight: 750;
+}
+
+.public-hostels-section .public-hostel-details-button {
+  width: 100%;
+  min-height: 43px;
+  border: 1px solid #2457d6;
+  background: #2457d6;
+  color: #ffffff;
+}
+
+.public-hostels-section .public-hostel-details-button:hover {
+  border-color: #173fa8;
+  background: #173fa8;
+}
+
+/* Loading, empty and error states */
+.public-hostels-section .public-hostel-state,
+.public-hostels-section .public-hostel-directory-status {
+  border-radius: 15px;
+  line-height: 1.6;
+}
+
+.public-hostels-section .public-hostel-state {
+  padding: 24px;
+  border: 1px solid #e0e7f1;
+  background: #ffffff;
+  color: #52647d;
+}
+
+.public-hostels-section .public-hostel-error {
+  border-color: #f2caca;
+  background: #fff7f7;
+  color: #a12626;
+}
+
+/* Hostel details popup */
+.public-hostel-modal-backdrop {
+  padding: 18px;
+  background: rgba(9, 22, 43, 0.68);
+  backdrop-filter: blur(5px);
+}
+
+.public-hostel-modal {
+  width: min(760px, 100%);
+  max-width: 100%;
+  max-height: calc(100dvh - 36px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 21px;
+  background: #ffffff;
+  box-shadow: 0 25px 80px rgba(3, 16, 38, 0.3);
+}
+
+.public-hostel-modal .public-hostel-modal-content {
+  padding: clamp(16px, 3vw, 26px);
+}
+
+.public-hostel-modal .public-hostel-pricing {
+  border-radius: 14px;
+  background: #f5f8ff;
+}
+
+.public-hostel-modal .public-hostel-pricing-item {
+  border-bottom: 1px solid #e1e8f3;
+}
+
+.public-hostel-modal .public-hostel-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Narrow-screen layout */
+@media (max-width: 760px) {
+  .public-hostels-section {
+    padding: 38px 0;
+  }
+
+  .public-hostels-section .public-hostels-heading {
+    align-items: stretch;
+    margin-bottom: 18px;
+  }
+
+  .public-hostels-section .public-hostels-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .public-hostels-section .public-hostel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 16px;
+  }
+
+  .public-hostels-section .public-hostel-card-media {
+    height: 190px;
+    min-height: 190px;
+  }
+
+  .public-hostels-section .public-hostel-card-content {
+    padding: 15px;
+  }
+
+  .public-hostel-modal-backdrop {
+    padding: 10px;
+  }
+
+  .public-hostel-modal {
+    max-height: calc(100dvh - 20px);
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .public-hostels-section .public-hostel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-hostels-section .public-hostel-card {
+    transition: none;
+  }
+
+  .public-hostels-section .public-hostel-card:hover {
+    transform: none;
+  }
+}
+
+/* SHMS DASHBOARD UI UPGRADE V1 */
+
+/* Dashboard workspace */
+.app-shell .content {
+  min-width: 0;
+  background: #f4f7fc;
+}
+
+.app-shell .dashboard-topbar,
+.app-shell .topbar {
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid #e1e7f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 5px 20px rgba(20, 41, 80, 0.045);
+}
+
+.app-shell .profile-strip {
+  min-width: 0;
+  gap: 10px;
+}
+
+.app-shell .profile-copy {
+  min-width: 0;
+}
+
+.app-shell .profile-copy strong,
+.app-shell .profile-copy span {
+  overflow-wrap: anywhere;
+}
+
+.app-shell .dashboard-kicker {
+  color: #2457d6;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-shell .dashboard-refresh-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.app-shell .dashboard-refresh-copy {
+  color: #69778e;
+  line-height: 1.5;
+}
+
+.app-shell .dashboard-refresh-button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid #d6e0ef;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1c3550;
+  font-weight: 750;
+}
+
+.app-shell .dashboard-refresh-button:hover {
+  border-color: #b7c9ed;
+  background: #f0f5ff;
+}
+
+/* Summary / KPI cards */
+.app-shell .metrics-grid {
+  align-items: stretch;
+  gap: 15px;
+}
+
+.app-shell .metrics-grid > * {
+  min-width: 0;
+  border: 1px solid #e1e7f0;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(20, 41, 80, 0.045);
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.app-shell .metrics-grid > *:hover {
+  border-color: #cad8ed;
+  box-shadow: 0 10px 25px rgba(20, 41, 80, 0.075);
+}
+
+.app-shell .operations-grid {
+  align-items: stretch;
+  gap: 15px;
+}
+
+.app-shell .mini-panel {
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid #e1e7f0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(20, 41, 80, 0.04);
+}
+
+.app-shell .mini-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.app-shell .bar-track {
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eaf0f8;
+}
+
+.app-shell .status-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #52647d;
+  font-size: 0.84rem;
+}
+
+/* Dashboard panels and charts */
+.app-shell .dashboard-grid {
+  align-items: start;
+  gap: 18px;
+  min-width: 0;
+}
+
+.app-shell .dashboard-grid > .panel {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e1e7f0;
+  border-radius: 17px;
+  background: #ffffff;
+  box-shadow: 0 7px 23px rgba(20, 41, 80, 0.045);
+}
+
+.app-shell .panel-title {
+  margin-top: 0;
+  color: #17243c;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.app-shell .gate-trend-panel {
+  min-width: 0;
+}
+
+.app-shell .gate-trend-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.app-shell .gate-trend-chart {
+  min-width: 520px;
+}
+
+.app-shell .gate-trend-day-label {
+  color: #69778e;
+  font-size: 0.75rem;
+}
+
+.app-shell .gate-trend-footnote {
+  color: #69778e;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.app-shell .gate-trend-empty {
+  padding: 20px;
+  border: 1px dashed #d4deed;
+  border-radius: 12px;
+  background: #f8faff;
+  color: #69778e;
+  text-align: center;
+}
+
+.app-shell .legend-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  color: #52647d;
+  font-size: 0.82rem;
+}
+
+.app-shell .occupancy-content {
+  min-width: 0;
+  gap: 16px;
+}
+
+.app-shell .legend-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.app-shell .legend-list > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Activity and complaint lists */
+.app-shell .activity-list,
+.app-shell .complaint-list {
+  min-width: 0;
+}
+
+.app-shell .activity-row,
+.app-shell .complaint-row {
+  min-width: 0;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.app-shell .activity-row:last-child,
+.app-shell .complaint-row:last-child {
+  border-bottom: 0;
+}
+
+.app-shell .activity-row > *,
+.app-shell .complaint-row > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.app-shell .mini-avatar {
+  flex-shrink: 0;
+  border: 1px solid #e0e8f5;
+  background: #eef3ff;
+}
+
+/* Wide data tables: keep columns readable without forcing page overflow */
+.app-shell .table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e1e7f0;
+  border-radius: 13px;
+  background: #ffffff;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.app-shell .table-scroll table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app-shell .table-scroll th {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e1e7f0;
+  background: #f5f8fd;
+  color: #52647d;
+  font-size: 0.77rem;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.app-shell .table-scroll td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #edf1f7;
+  color: #283a53;
+  vertical-align: middle;
+}
+
+.app-shell .table-scroll tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app-shell .table-scroll tbody tr:hover {
+  background: #f8faff;
+}
+
+/* Sidebar navigation feedback */
+.app-shell .nav-list a {
+  min-width: 0;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.app-shell .nav-list a[aria-current="page"],
+.app-shell .nav-list a.active {
+  background: rgba(90, 139, 244, 0.22);
+  color: #ffffff;
+}
+
+.app-shell .nav-list a:focus-visible {
+  outline: 2px solid #a9c5ff;
+  outline-offset: 2px;
+}
+
+/* Responsive dashboard spacing */
+@media (max-width: 1000px) {
+  .app-shell .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-shell .dashboard-grid > .panel {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell .dashboard-topbar,
+  .app-shell .topbar {
+    padding: 12px;
+  }
+
+  .app-shell .dashboard-grid {
+    gap: 13px;
+  }
+
+  .app-shell .dashboard-grid > .panel {
+    padding: 15px;
+    border-radius: 14px;
+  }
+
+  .app-shell .mini-panel {
+    padding: 14px;
+  }
+
+  .app-shell .dashboard-refresh-row {
+    align-items: stretch;
+  }
+
+  .app-shell .dashboard-refresh-button {
+    align-self: flex-start;
+  }
+
+  .app-shell .gate-trend-chart {
+    min-width: 480px;
+  }
+
+  .app-shell .table-scroll table {
+    min-width: 620px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .metrics-grid > * {
+    transition: none;
+  }
+}
+
+/* SHMS MULTI-HOSTEL SWITCHER V1 */
+.app-shell .hostel-switcher {
+  display: grid;
+  min-width: 170px;
+  max-width: 250px;
+  gap: 5px;
+  align-content: center;
+  color: #17243c;
+  font-weight: 700;
+}
+.app-shell .hostel-switcher > span {
+  color: #69778e;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+.app-shell .hostel-switcher select {
+  width: 100%;
+  min-width: 170px;
+  max-width: 250px;
+  min-height: 39px;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid #d6e0ef;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #17243c;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+.app-shell .hostel-switcher-error {
+  max-width: 250px;
+  color: #a12626;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .app-shell .profile-strip {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .app-shell .hostel-switcher {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
+  }
+  .app-shell .hostel-switcher select {
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+/* SHMS GOOGLE LOGIN BUTTON V1 */
+.shms-google-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 18px 0 8px;
+}
+.shms-google-login-label {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+/* Final interaction layer: loaded after legacy page styles. */
+.app-shell {
+  background: #f4f7fc;
+}
+
+.app-shell .sidebar {
+  background: linear-gradient(180deg, #102a4c 0%, #081b33 100%);
+}
+
+.app-shell .nav-list button {
+  position: relative;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #c9d8ee;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.app-shell .nav-list button:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.app-shell .nav-list button.active {
+  background: linear-gradient(90deg, #147eef 0%, #0b62c4 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(5, 46, 96, 0.3);
+}
+
+.app-shell .nav-list button.active::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 3px;
+  height: 52%;
+  border-radius: 0 4px 4px 0;
+  background: #ffffff;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.app-shell .content {
+  animation: shms-enter 360ms cubic-bezier(0.2, 0.85, 0.28, 1) both;
+}
+
+.app-shell .hero-strip {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.app-shell .hero-strip::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 -34%;
+  width: 42%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  content: "";
+  animation: shms-sheen 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.app-shell .metric-card,
+.app-shell .mini-panel,
+.app-shell .dashboard-grid > .panel,
+.app-shell .facility-panel {
+  animation: shms-rise 440ms cubic-bezier(0.2, 0.85, 0.28, 1) both;
+}
+
+.app-shell .metric-card:nth-child(2),
+.app-shell .mini-panel:nth-child(2),
+.app-shell .dashboard-grid > .panel:nth-child(2) { animation-delay: 50ms; }
+.app-shell .metric-card:nth-child(3),
+.app-shell .mini-panel:nth-child(3),
+.app-shell .dashboard-grid > .panel:nth-child(3) { animation-delay: 100ms; }
+.app-shell .metric-card:nth-child(4),
+.app-shell .dashboard-grid > .panel:nth-child(4) { animation-delay: 150ms; }
+
+.app-shell .metric-card,
+.app-shell .mini-panel,
+.app-shell .dashboard-grid > .panel,
+.app-shell .facility-panel,
+.app-shell .table-scroll {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.app-shell .metric-card:hover,
+.app-shell .mini-panel:hover,
+.app-shell .dashboard-grid > .panel:hover,
+.app-shell .facility-panel:hover {
+  border-color: #c9daf0;
+  box-shadow: 0 16px 34px rgba(20, 58, 108, 0.12);
+  transform: translateY(-2px);
+}
+
+.app-shell .dashboard-refresh-button,
+.app-shell .auth-submit,
+.app-shell .facility-submit,
+.app-shell .primary-action {
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.app-shell .dashboard-refresh-button:hover:not(:disabled),
+.app-shell .auth-submit:hover:not(:disabled),
+.app-shell .facility-submit:hover:not(:disabled),
+.app-shell .primary-action:hover:not(:disabled) {
+  box-shadow: 0 10px 20px rgba(13, 98, 199, 0.22);
+  filter: saturate(1.08);
+  transform: translateY(-1px);
+}
+
+.app-shell .table-scroll tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.app-shell .table-scroll tbody tr:hover {
+  background: #f5f9ff;
+}
+
+.app-shell .activity-row,
+.app-shell .complaint-row {
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.app-shell .activity-row:hover,
+.app-shell .complaint-row:hover {
+  background: #f7faff;
+  transform: translateX(2px);
+}
+
+.photo-modal,
+.camera-modal,
+.modal-backdrop {
+  animation: shms-modal-in 180ms ease-out both;
+}
+
+@keyframes shms-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shms-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shms-sheen {
+  0%, 58% { transform: translateX(0); }
+  78%, 100% { transform: translateX(340%); }
+}
+
+@keyframes shms-modal-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .content,
+  .app-shell .hero-strip::after,
+  .app-shell .metric-card,
+  .app-shell .mini-panel,
+  .app-shell .dashboard-grid > .panel,
+  .app-shell .facility-panel,
+  .photo-modal,
+  .camera-modal,
+  .modal-backdrop {
+    animation: none;
+  }
+
+  .app-shell .nav-list button,
+  .app-shell .metric-card,
+  .app-shell .mini-panel,
+  .app-shell .dashboard-grid > .panel,
+  .app-shell .facility-panel,
+  .app-shell .activity-row,
+  .app-shell .complaint-row {
+    transition: none;
+  }
+}

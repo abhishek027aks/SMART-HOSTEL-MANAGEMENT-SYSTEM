@@ -1,0 +1,375 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  CheckCircle2, ClipboardList, Clock3, LogOut, RefreshCw,
+  Send, ShieldCheck, XCircle
+} from "lucide-react";
+import { apiRequest } from "../services/api.js";
+
+const STATUS_LABELS = {
+  PENDING: "Pending review",
+  PENDING_PARENT: "Awaiting parent",
+  PENDING_FINAL: "Awaiting warden / owner",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+  EXPIRED: "Expired",
+  COMPLETED: "Returned / completed"
+};
+
+const ACTION_LABELS = {
+  REQUEST_SUBMITTED: "Request submitted",
+  PARENT_APPROVED: "Parent approved",
+  PARENT_REJECTED: "Parent rejected",
+  FINAL_APPROVED: "Final approval",
+  FINAL_REJECTED: "Final rejection",
+  RETURN_CONFIRMED: "Return confirmed"
+};
+
+function formatDate(value) {
+  if (!value) return "Not recorded";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "Invalid date";
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
+function OutpassPage({ token, role }) {
+  const isStudent = role === "STUDENT";
+  const isParent = role === "PARENT";
+  const canDecide = ["OWNER", "WARDEN", "SYSTEM_ADMIN"].includes(role);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [feedback, setFeedback] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [busyId, setBusyId] = useState("");
+  const [notes, setNotes] = useState({});
+  const [formBusy, setFormBusy] = useState(false);
+  const [form, setForm] = useState(() => ({
+    requestType: "OUTPASS",
+    reason: "",
+    destination: "",
+    startAt: "",
+    expectedReturnAt: ""
+  }));
+
+  const updateForm = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const loadItems = useCallback(async (signal) => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const path = isStudent || isParent ? "/api/outpasses/mine" : "/api/outpasses";
+      const response = await apiRequest(path, { token, signal });
+      if (!Array.isArray(response?.data)) {
+        throw new Error("The server returned an invalid outpass list.");
+      }
+      setItems(response.data);
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setLoadError(error.message || "Unable to load Outpass / Leave records.");
+      }
+    } finally {
+      if (!signal.aborted) setLoading(false);
+    }
+  }, [token, isStudent, isParent]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadItems(controller.signal);
+    return () => controller.abort();
+  }, [loadItems, reloadKey]);
+
+  const pendingCount = useMemo(
+    () => items.filter((item) =>
+      isParent ? item.status === "PENDING_PARENT" :
+      canDecide ? item.status === "PENDING_FINAL" : false
+    ).length,
+    [items, isParent, canDecide]
+  );
+
+  const performAction = async (item, path, method, body, successMessage) => {
+    setBusyId(String(item._id));
+    setFeedback(null);
+    try {
+      await apiRequest(path, {
+        method,
+        token,
+        body: JSON.stringify(body || {})
+      });
+      setFeedback({ type: "success", message: successMessage });
+      setNotes((current) => ({ ...current, [item._id]: "" }));
+      setReloadKey((value) => value + 1);
+    } catch (error) {
+      setFeedback({ type: "error", message: error.message || "The action failed." });
+    } finally {
+      setBusyId("");
+    }
+  };
+
+  const submitRequest = async (event) => {
+    event.preventDefault();
+    setFeedback(null);
+    setFormBusy(true);
+    try {
+      if (!form.startAt || !form.expectedReturnAt) {
+        throw new Error("Please select both the start and expected return time.");
+      }
+      const payload = {
+        requestType: form.requestType,
+        reason: form.reason.trim(),
+        destination: form.destination.trim(),
+        startAt: new Date(form.startAt).toISOString(),
+        expectedReturnAt: new Date(form.expectedReturnAt).toISOString()
+      };
+      await apiRequest("/api/outpasses", {
+        method: "POST",
+        token,
+        body: JSON.stringify(payload)
+      });
+      setFeedback({ type: "success", message: "Your request was submitted for Parent review." });
+      setForm({
+        requestType: "OUTPASS",
+        reason: "",
+        destination: "",
+        startAt: "",
+        expectedReturnAt: ""
+      });
+      setReloadKey((value) => value + 1);
+    } catch (error) {
+      setFeedback({ type: "error", message: error.message || "Unable to submit your request." });
+    } finally {
+      setFormBusy(false);
+    }
+  };
+
+  const reviewAsParent = (item, decision) => {
+    const note = String(notes[item._id] || "").trim();
+    if (decision === "REJECT" && !note) {
+      setFeedback({ type: "error", message: "Please enter a reason before rejecting the request." });
+      return;
+    }
+    void performAction(
+      item,
+      `/api/outpasses/${item._id}/parent-review`,
+      "PATCH",
+      { decision, note },
+      decision === "APPROVE" ? "Parent review approved. The request is waiting for final approval." : "Request rejected by Parent."
+    );
+  };
+
+  const finalDecision = (item, decision) => {
+    const note = String(notes[item._id] || "").trim();
+    if (decision === "REJECT" && !note) {
+      setFeedback({ type: "error", message: "Please enter a reason before rejecting the request." });
+      return;
+    }
+    void performAction(
+      item,
+      `/api/outpasses/${item._id}/decision`,
+      "PATCH",
+      { decision, note },
+      decision === "APPROVE" ? "Final approval recorded." : "Request rejected by hostel staff."
+    );
+  };
+
+  const confirmReturn = (item) => {
+    if (!window.confirm("Confirm that this student has returned to the hostel?")) return;
+    void performAction(
+      item,
+      `/api/outpasses/${item._id}/return`,
+      "POST",
+      { note: String(notes[item._id] || "").trim() },
+      "Return confirmation saved in history."
+    );
+  };
+
+  return (
+    <section className="outpass-module" aria-labelledby="outpass-heading">
+      <header className="outpass-heading">
+        <div className="outpass-heading-icon"><ClipboardList size={24} aria-hidden="true" /></div>
+        <div>
+          <span className="dashboard-kicker">HOSTEL OPERATIONS</span>
+          <h2 id="outpass-heading">Outpass / Leave</h2>
+          <p>
+            {isStudent ? "Submit a request and track every decision." :
+             isParent ? "Review leave and outpass requests for your linked students." :
+             "Review parent-approved requests and record student returns."}
+          </p>
+        </div>
+        <button className="facility-secondary" type="button" onClick={() => setReloadKey((value) => value + 1)} disabled={loading || Boolean(busyId)}>
+          <RefreshCw size={16} aria-hidden="true" /> Refresh
+        </button>
+      </header>
+
+      {feedback ? (
+        <div className={feedback.type === "error" ? "outpass-feedback error" : "outpass-feedback success"}
+          role={feedback.type === "error" ? "alert" : "status"} aria-live="polite">
+          {feedback.type === "error" ? <XCircle size={18} aria-hidden="true" /> : <CheckCircle2 size={18} aria-hidden="true" />}
+          <span>{feedback.message}</span>
+          <button type="button" aria-label="Dismiss message" onClick={() => setFeedback(null)}>×</button>
+        </div>
+      ) : null}
+
+      {isStudent ? (
+        <form className="outpass-form" onSubmit={submitRequest}>
+          <div className="outpass-section-title">
+            <div><span>NEW REQUEST</span><h3>Apply for outpass or leave</h3></div>
+            <ShieldCheck size={22} aria-hidden="true" />
+          </div>
+          <div className="outpass-form-grid">
+            <label className="outpass-field">
+              Request type
+              <select name="requestType" value={form.requestType} onChange={updateForm}>
+                <option value="OUTPASS">Outpass</option>
+                <option value="LEAVE">Leave</option>
+              </select>
+            </label>
+            <label className="outpass-field">
+              Destination
+              <input name="destination" value={form.destination} onChange={updateForm} required maxLength={300} placeholder="Where are you going?" />
+            </label>
+            <label className="outpass-field outpass-field-wide">
+              Reason
+              <textarea name="reason" value={form.reason} onChange={updateForm} required minLength={5} maxLength={1000} rows={3} placeholder="Explain the reason for your request" />
+            </label>
+            <label className="outpass-field">
+              Departure date & time
+              <input name="startAt" type="datetime-local" value={form.startAt} min={new Date(Date.now() + 60000).toISOString().slice(0, 16)} onChange={updateForm} required />
+            </label>
+            <label className="outpass-field">
+              Expected return date & time
+              <input name="expectedReturnAt" type="datetime-local" value={form.expectedReturnAt} min={form.startAt || new Date(Date.now() + 120000).toISOString().slice(0, 16)} onChange={updateForm} required />
+            </label>
+          </div>
+          <p className="outpass-form-help">Your request goes to the linked Parent first. Final permission is granted only after Warden / Owner approval.</p>
+          <button className="facility-submit" type="submit" disabled={formBusy}>
+            <Send size={16} aria-hidden="true" /> {formBusy ? "Submitting..." : "Submit request"}
+          </button>
+        </form>
+      ) : null}
+
+      <section className="outpass-records" aria-labelledby="outpass-records-heading">
+        <div className="outpass-section-title">
+          <div>
+            <span>{isParent ? "PARENT REVIEW" : canDecide ? "STAFF REVIEW" : "MY RECORDS"}</span>
+            <h3 id="outpass-records-heading">
+              {isParent ? "Linked student requests" : canDecide ? "Hostel requests" : "Request history"}
+            </h3>
+          </div>
+          {!isStudent ? <span className="outpass-pending-count">{pendingCount} awaiting your action</span> : null}
+        </div>
+
+        {loading ? <div className="outpass-state" role="status"><Clock3 size={19} /> Loading requests...</div> : null}
+        {!loading && loadError ? (
+          <div className="outpass-state error" role="alert">
+            <p>{loadError}</p>
+            <button className="facility-secondary" type="button" onClick={() => setReloadKey((value) => value + 1)}>Try again</button>
+          </div>
+        ) : null}
+        {!loading && !loadError && items.length === 0 ? (
+          <div className="outpass-state">
+            <ClipboardList size={25} aria-hidden="true" />
+            <strong>No requests yet</strong>
+            <span>{isStudent ? "Your submitted requests will appear here." : "There are no matching Outpass / Leave records for this account."}</span>
+          </div>
+        ) : null}
+
+        {!loading && !loadError && items.length > 0 ? (
+          <div className="outpass-list">
+            {items.map((item) => {
+              const student = item.studentId && typeof item.studentId === "object" ? item.studentId : null;
+              const canParentReview = isParent && item.status === "PENDING_PARENT";
+              const canFinalReview = canDecide && item.status === "PENDING_FINAL";
+              const canReturn = item.status === "APPROVED" &&
+                (isStudent || canDecide);
+              const busy = busyId === String(item._id);
+
+              return (
+                <article className="outpass-card" key={item._id}>
+                  <div className="outpass-card-top">
+                    <div>
+                      <span className="outpass-type">{item.requestType === "LEAVE" ? "LEAVE REQUEST" : "OUTPASS REQUEST"}</span>
+                      <h4>{student?.name || (isStudent ? "My request" : "Student request")}</h4>
+                      {student?.studentId ? <span className="outpass-student-id">Student ID: {student.studentId}</span> : null}
+                    </div>
+                    <span className={`outpass-status ${String(item.status || "").toLowerCase().replaceAll("_", "-")}`}>
+                      {STATUS_LABELS[item.status] || item.status || "Unknown status"}
+                    </span>
+                  </div>
+
+                  <div className="outpass-detail-grid">
+                    <div><span>Reason</span><strong>{item.reason || "—"}</strong></div>
+                    <div><span>Destination</span><strong>{item.destination || "—"}</strong></div>
+                    <div><span>Departure</span><strong>{formatDate(item.startAt)}</strong></div>
+                    <div><span>Expected return</span><strong>{formatDate(item.expectedReturnAt)}</strong></div>
+                    <div><span>Submitted</span><strong>{formatDate(item.createdAt)}</strong></div>
+                    {item.parentReviewedAt ? <div><span>Parent reviewed</span><strong>{formatDate(item.parentReviewedAt)}</strong></div> : null}
+                    {item.finalDecisionAt ? <div><span>Final decision</span><strong>{formatDate(item.finalDecisionAt)}</strong></div> : null}
+                    {item.returnedAt ? <div><span>Returned at</span><strong>{formatDate(item.returnedAt)}</strong></div> : null}
+                  </div>
+
+                  {item.parentReviewStatus && item.parentReviewStatus !== "PENDING" ? (
+                    <p className="outpass-review-note"><strong>Parent:</strong> {item.parentReviewStatus}{item.parentReviewNote ? ` — ${item.parentReviewNote}` : ""}</p>
+                  ) : null}
+                  {item.finalDecisionNote ? <p className="outpass-review-note"><strong>Final decision:</strong> {item.finalDecisionNote}</p> : null}
+
+                  {canParentReview || canFinalReview || canReturn ? (
+                    <div className="outpass-card-actions">
+                      <label className="outpass-field outpass-note-label">
+                        {canReturn ? "Return note (optional)" : "Review note"}
+                        <textarea rows={2} value={notes[item._id] || ""} maxLength={1000}
+                          onChange={(event) => setNotes((current) => ({ ...current, [item._id]: event.target.value }))}
+                          placeholder={canReturn ? "Optional return details" : "Required when rejecting"} />
+                      </label>
+                      <div className="outpass-action-buttons">
+                        {canParentReview ? (
+                          <>
+                            <button className="facility-submit" type="button" disabled={busy} onClick={() => reviewAsParent(item, "APPROVE")}><CheckCircle2 size={16} /> Approve</button>
+                            <button className="outpass-danger-button" type="button" disabled={busy} onClick={() => reviewAsParent(item, "REJECT")}><XCircle size={16} /> Reject</button>
+                          </>
+                        ) : null}
+                        {canFinalReview ? (
+                          <>
+                            <button className="facility-submit" type="button" disabled={busy} onClick={() => finalDecision(item, "APPROVE")}><CheckCircle2 size={16} /> Final approve</button>
+                            <button className="outpass-danger-button" type="button" disabled={busy} onClick={() => finalDecision(item, "REJECT")}><XCircle size={16} /> Reject</button>
+                          </>
+                        ) : null}
+                        {canReturn ? (
+                          <button className="facility-submit" type="button" disabled={busy} onClick={() => confirmReturn(item)}><LogOut size={16} /> Confirm return</button>
+                        ) : null}
+                        {busy ? <span className="outpass-busy" role="status">Saving...</span> : null}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <details className="outpass-history">
+                    <summary>Decision history ({(item.history || []).length})</summary>
+                    {(item.history || []).length === 0 ? <p>No history entries recorded.</p> : (
+                      <ol>
+                        {item.history.map((entry, index) => (
+                          <li key={`${entry.action}-${entry.at}-${index}`}>
+                            <strong>{ACTION_LABELS[entry.action] || entry.action}</strong>
+                            <span>{entry.fromStatus} → {entry.toStatus}</span>
+                            <time dateTime={entry.at}>{formatDate(entry.at)}</time>
+                            {entry.note ? <p>{entry.note}</p> : null}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </details>
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+      </section>
+    </section>
+  );
+}
+
+export default OutpassPage;

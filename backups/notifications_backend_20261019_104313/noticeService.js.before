@@ -1,0 +1,29 @@
+const mongoose = require("mongoose");
+const Notice = require("../models/Notice");
+const Student = require("../models/Student");
+const Parent = require("../models/Parent");
+const ROLES = require("../constants/roles");
+const TARGETS = ["ALL", "ALL_STUDENTS", "ALL_PARENTS", "BLOCK", "FLOOR", "STUDENT"];
+const PRIORITIES = ["GENERAL", "IMPORTANT", "URGENT"];
+const error = (statusCode, message) => Object.assign(new Error(message), { statusCode });
+const text = (value, maximum) => typeof value === "string" ? value.trim().slice(0, maximum) : "";
+const active = { status: "ACTIVE", isDeleted: { $ne: true } };
+const create = async (req) => {
+    const title = text(req.body?.title, 160); const body = text(req.body?.body, 4000); const target = text(req.body?.target, 30).toUpperCase() || "ALL"; const priority = text(req.body?.priority, 20).toUpperCase() || "GENERAL";
+    if (title.length < 3 || body.length < 5) throw error(400, "Notice title and message are required.");
+    if (!TARGETS.includes(target) || !PRIORITIES.includes(priority)) throw error(400, "Invalid notice target or priority.");
+    const key = target === "BLOCK" ? "targetBlockId" : target === "FLOOR" ? "targetFloorId" : target === "STUDENT" ? "targetStudentId" : null;
+    if (key && !mongoose.isValidObjectId(req.body?.[key])) throw error(400, "A valid target record is required.");
+    const targetFields = key ? { [key]: req.body[key] } : {};
+    return Notice.create({ hostelId: req.tenant.hostelId, publishedBy: req.auth.id, title, body, target, priority, ...targetFields });
+};
+const list = async (req) => ({ items: await Notice.find({ hostelId: req.tenant.hostelId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(300).lean() });
+const mine = async (req) => {
+    let students = [];
+    if (req.auth.role === ROLES.STUDENT) { const student = await Student.findOne({ userId: req.auth.id, hostelId: req.tenant.hostelId, ...active }).lean(); if (!student) throw error(404, "Active student profile not found."); students = [student]; }
+    else { const parent = await Parent.findOne({ userId: req.auth.id, hostelId: req.tenant.hostelId, ...active }).select("studentIds").lean(); if (!parent) throw error(404, "Active parent profile not found."); students = await Student.find({ _id: { $in: parent.studentIds }, hostelId: req.tenant.hostelId, ...active }).lean(); }
+    const studentIds = students.map((student) => student._id); const blockIds = students.map((student) => student.blockId).filter(Boolean); const floorIds = students.map((student) => student.floorId).filter(Boolean);
+    const shared = req.auth.role === ROLES.PARENT ? ["ALL", "ALL_PARENTS"] : ["ALL", "ALL_STUDENTS"];
+    return { items: await Notice.find({ hostelId: req.tenant.hostelId, isDeleted: { $ne: true }, $or: [{ target: { $in: shared } }, { target: "STUDENT", targetStudentId: { $in: studentIds } }, { target: "BLOCK", targetBlockId: { $in: blockIds } }, { target: "FLOOR", targetFloorId: { $in: floorIds } }] }).sort({ createdAt: -1 }).limit(300).lean() };
+};
+module.exports = { create, error, list, mine };

@@ -1,0 +1,567 @@
+:root {
+  color-scheme: light;
+  --shms-ink: #17243c;
+  --shms-muted: #69778e;
+  --shms-primary: #2457d6;
+  --shms-primary-dark: #173fa8;
+  --shms-border: #e1e7f0;
+  --shms-surface: #ffffff;
+  --shms-background: #f4f7fc;
+  --shms-radius: 18px;
+  --shms-shadow: 0 12px 32px rgba(20, 41, 80, 0.07);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  color: var(--shms-ink);
+  background: var(--shms-background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid rgba(36, 87, 214, 0.26);
+  outline-offset: 3px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Authenticated application shell */
+.app-shell {
+  min-height: 100vh;
+  background: var(--shms-background);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #14213b 0%, #101b31 100%);
+  color: #f7f9ff;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 8px 0 28px rgba(16, 31, 58, 0.07);
+}
+
+.brand-mark {
+  border-radius: 13px;
+}
+
+.nav-list a {
+  border-radius: 11px;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.nav-list a:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.content {
+  min-width: 0;
+}
+
+.topbar,
+.dashboard-topbar {
+  border: 1px solid var(--shms-border);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 5px 18px rgba(20, 41, 80, 0.035);
+}
+
+.dashboard-heading h1,
+.panel-title,
+.gate-trend-title {
+  color: var(--shms-ink);
+  letter-spacing: -0.025em;
+}
+
+.hero-strip {
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.hostel-summary-card,
+.mini-panel,
+.panel,
+.metrics-grid > *,
+.operations-grid > *,
+.dashboard-grid > * {
+  border-radius: var(--shms-radius);
+}
+
+.panel,
+.mini-panel,
+.hostel-summary-card,
+.metrics-grid > *,
+.operations-grid > *,
+.dashboard-grid > * {
+  border-color: var(--shms-border);
+}
+
+.panel,
+.mini-panel,
+.hostel-summary-card {
+  box-shadow: var(--shms-shadow);
+}
+
+.dashboard-refresh-button,
+.dashboard-range-control,
+.icon-button {
+  border-radius: 11px;
+}
+
+/* Public landing page and authentication */
+.landing-page {
+  min-height: 100vh;
+  color: var(--shms-ink);
+  background:
+    radial-gradient(ellipse at 12% 0%, rgba(218, 231, 255, 0.75), transparent 36%),
+    linear-gradient(180deg, #f8faff 0%, #f2f6fc 100%);
+}
+
+.landing-header {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(225, 231, 240, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.brand-mark-home {
+  border-radius: 13px;
+}
+
+.hero-copy-panel {
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(19, 39, 78, 0.13);
+}
+
+.login-panel {
+  min-width: 0;
+}
+
+.login-box {
+  background: var(--shms-surface);
+  border: 1px solid var(--shms-border);
+  border-radius: 23px;
+  box-shadow: 0 20px 55px rgba(20, 41, 80, 0.10);
+}
+
+.login-card-heading {
+  letter-spacing: -0.025em;
+}
+
+.login-fields,
+.registration-fields {
+  min-width: 0;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.payment-field input,
+.payment-field select,
+.public-hostel-search input {
+  max-width: 100%;
+  border-radius: 11px;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus,
+.payment-field input:focus,
+.payment-field select:focus {
+  border-color: var(--shms-primary);
+  box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.10);
+}
+
+.role-grid > *,
+.feature-card,
+.trust-card {
+  border-radius: 15px;
+}
+
+.auth-error {
+  border-radius: 11px;
+}
+
+.auth-submit,
+.landing-submit,
+.primary-action,
+.nav-login-btn,
+.secondary-action {
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.feature-card,
+.trust-card {
+  border: 1px solid var(--shms-border);
+  background: rgba(255, 255, 255, 0.91);
+  box-shadow: 0 7px 22px rgba(20, 41, 80, 0.045);
+}
+
+/* Public hostel directory */
+.public-hostels-section {
+  background: transparent;
+}
+
+.public-hostel-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--shms-border);
+  border-radius: 19px;
+  background: var(--shms-surface);
+  box-shadow: 0 8px 25px rgba(20, 41, 80, 0.055);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+.public-hostel-card:hover {
+  transform: translateY(-3px);
+  border-color: #c8d6f3;
+  box-shadow: 0 16px 34px rgba(20, 41, 80, 0.105);
+}
+
+.public-hostel-card-photo {
+  max-width: 100%;
+}
+
+.public-hostel-search input {
+  background: #fff;
+  border-color: var(--shms-border);
+}
+
+.public-hostel-details-button,
+.public-hostel-action {
+  border-radius: 10px;
+}
+
+.public-hostel-modal {
+  max-width: min(760px, calc(100vw - 28px));
+  border-radius: 22px;
+  overflow: auto;
+}
+
+/* Payment cards and forms */
+.payment-portal,
+.payment-management {
+  min-width: 0;
+}
+
+.payment-card,
+.payment-invoice-form,
+.payment-empty {
+  border: 1px solid var(--shms-border);
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(20, 41, 80, 0.05);
+}
+
+.payment-upi-box {
+  border-radius: 14px;
+}
+
+.payment-button {
+  border-radius: 11px;
+  font-weight: 700;
+}
+
+.payment-status {
+  border-radius: 999px;
+}
+
+/* Avoid layout overflow on smaller screens */
+img,
+svg {
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.table-scroll,
+.table-scroll table {
+  max-width: 100%;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .public-hostel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+  }
+
+  .nav-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+  }
+
+  .nav-list a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .content {
+    min-width: 0;
+    padding: 14px;
+  }
+
+  .topbar,
+  .dashboard-topbar {
+    border-radius: 13px;
+  }
+
+  .hero-strip {
+    border-radius: 17px;
+  }
+
+  .landing-header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero-copy-panel,
+  .login-box {
+    border-radius: 19px;
+  }
+
+  .public-hostels-inner {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .public-hostel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .payment-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .content {
+    padding: 10px;
+  }
+
+  .public-hostel-pagination {
+    flex-wrap: wrap;
+  }
+
+  .payment-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* SHMS VISUAL CORRECTION V1 */
+
+/* Dark header with readable navigation and brand */
+.landing-header {
+  background: #071f38 !important;
+  color: #f8fbff !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(7, 31, 56, 0.16);
+}
+
+.landing-header .brand-block,
+.landing-header .brand-copy strong,
+.landing-header .brand-copy span,
+.landing-header .main-nav .nav-pill {
+  color: #f8fbff !important;
+}
+
+.landing-header .brand-mark-home {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.landing-header .main-nav .nav-pill {
+  opacity: 0.88;
+}
+
+.landing-header .main-nav .nav-pill:hover,
+.landing-header .main-nav .nav-pill.active {
+  color: #ffffff !important;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Restore dark, readable feature tiles over the hero photo */
+.feature-grid .feature-card {
+  color: #f8fbff !important;
+  background: rgba(8, 29, 49, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.feature-grid .feature-card .feature-label,
+.feature-grid .feature-card strong,
+.feature-grid .feature-card span {
+  color: #f8fbff !important;
+}
+
+/* Keep the lower benefit cards light, with readable text */
+.trust-grid .trust-card {
+  color: #17243c;
+  background: #ffffff;
+  border: 1px solid #e1e7f0;
+  box-shadow: 0 8px 24px rgba(20, 41, 80, 0.055);
+}
+
+.trust-grid .trust-card h3,
+.trust-grid .trust-card strong {
+  color: #17243c;
+}
+
+.trust-grid .trust-card p,
+.trust-grid .trust-card span {
+  color: #69778e;
+}
+
+/* Prevent the login form and role cards from being clipped */
+.login-panel {
+  min-width: 0;
+  overflow: visible;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.login-form-content {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.login-fields,
+.role-select-wrap {
+  min-width: 0;
+  overflow: visible;
+}
+
+.role-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.role-grid > * {
+  min-width: 0;
+}
+
+/* Better use of space for hostel listings */
+.public-hostel-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr));
+  align-items: stretch;
+  gap: 22px;
+}
+
+.public-hostel-card {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 760px) {
+  .landing-header-inner {
+    gap: 10px;
+  }
+
+  .login-box {
+    max-width: 100%;
+  }
+
+  .role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .login-box {
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+  }
+}

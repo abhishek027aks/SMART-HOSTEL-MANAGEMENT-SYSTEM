@@ -1,0 +1,180 @@
+import { useCallback, useEffect, useState } from "react";
+import { LogOut, RefreshCw, ShieldCheck, UserRound, Users } from "lucide-react";
+import { apiRequest } from "../services/api.js";
+import PaymentPortal from "../components/PaymentPortal.jsx";
+import OutpassPage from "./OutpassPage.jsx";
+import ComplaintPage from "./ComplaintPage.jsx";
+import HelpContactsPage from "./HelpContactsPage.jsx";
+import NoticesPage from "./NoticesPage.jsx";
+
+const relationshipLabel = {
+  FATHER: "Father",
+  MOTHER: "Mother",
+  GUARDIAN: "Guardian",
+  OTHER: "Other"
+};
+
+function ParentPortalPage({ token, logout }) {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reload, setReload] = useState(0);
+
+  const loadProfile = useCallback(async (signal) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await apiRequest("/api/parents/me", {
+        token,
+        signal
+      });
+      setProfile(response.data);
+    } catch (requestError) {
+      if (requestError.name !== "AbortError") {
+        setError(requestError.message || "Unable to load your family profile.");
+      }
+    } finally {
+      if (!signal.aborted) setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadProfile(controller.signal);
+    return () => controller.abort();
+  }, [loadProfile, reload]);
+
+  return (
+    <main className="parent-portal-page">
+      <header className="parent-portal-header">
+        <div className="parent-portal-brand">
+          <span className="parent-portal-mark">
+            <ShieldCheck size={23} aria-hidden="true" />
+          </span>
+          <div>
+            <span className="dashboard-kicker">SMART HOSTEL MANAGEMENT</span>
+            <h1>Family Portal</h1>
+          </div>
+        </div>
+
+        <button className="auth-logout" type="button" onClick={logout}>
+          <LogOut size={16} aria-hidden="true" /> Sign out
+        </button>
+      </header>
+
+      <section className="parent-portal-content" aria-labelledby="family-heading">
+        {loading ? (
+          <div className="parent-portal-panel" role="status">
+            Loading your family profile...
+          </div>
+        ) : null}
+
+        {!loading && error ? (
+          <div className="parent-portal-panel">
+            <p className="facility-error" role="alert">{error}</p>
+            <div className="parent-portal-actions">
+              <button
+                className="facility-secondary"
+                type="button"
+                onClick={() => setReload((current) => current + 1)}
+              >
+                <RefreshCw size={16} aria-hidden="true" /> Try again
+              </button>
+              <button className="auth-logout" type="button" onClick={logout}>
+                Sign out
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {!loading && !error && profile ? (
+          <>
+            <section className="parent-portal-welcome">
+              <span className="parent-portal-eyebrow">WELCOME</span>
+              <h2 id="family-heading">{profile.name}</h2>
+              <p>View the active student records linked to your parent account.</p>
+              <div className="parent-portal-tags">
+                <span>Parent ID: {profile.parentId}</span>
+                <span>{relationshipLabel[profile.relationship] || profile.relationship}</span>
+              </div>
+            </section>
+
+            <div className="parent-portal-section-heading">
+              <div>
+                <span className="dashboard-kicker">FAMILY RECORDS</span>
+                <h2>Linked students</h2>
+              </div>
+              <span className="parent-portal-count">
+                {(profile.students || []).length} linked
+              </span>
+            </div>
+
+            {(profile.students || []).length === 0 ? (
+              <section className="parent-portal-panel">
+                <Users size={25} aria-hidden="true" />
+                <h3>No active linked students</h3>
+                <p>Contact the hostel administrator if a student should be linked to your account.</p>
+              </section>
+            ) : (
+              <div className="parent-portal-student-grid">
+                {profile.students.map((student) => (
+                  <article className="parent-portal-student" key={student._id}>
+                    <div className="parent-portal-student-icon">
+                      <UserRound size={22} aria-hidden="true" />
+                    </div>
+                    <div className="parent-portal-student-heading">
+                      <h3>{student.name}</h3>
+                      <span className="parent-portal-student-id">
+                        Student ID: {student.studentId}
+                      </span>
+                    </div>
+                    <div className="parent-portal-detail">
+                      <span>Account status</span>
+                      <strong>{student.status}</strong>
+                    </div>
+                    <div className="parent-portal-detail">
+                      <span>Room allocation</span>
+                      <strong>
+                        {student.allocationStatus === "ALLOCATED"
+                          ? "Allocated"
+                          : "Not allocated"}
+                      </strong>
+                    </div>
+                    {student.mobile ? (
+                      <div className="parent-portal-detail">
+                        <span>Student mobile</span>
+                        <strong>{student.mobile}</strong>
+                      </div>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
+
+            <button
+              className="facility-secondary parent-portal-refresh"
+              type="button"
+              onClick={() => setReload((current) => current + 1)}
+              disabled={loading}
+            >
+              <RefreshCw size={16} aria-hidden="true" /> Refresh records
+            </button>
+
+            <OutpassPage token={token} role="PARENT" />
+            <ComplaintPage token={token} role="PARENT" />
+            <HelpContactsPage token={token} role="PARENT" />
+            <NoticesPage token={token} role="PARENT" />
+            <PaymentPortal token={token} mode="parent" />
+            <p className="parent-portal-privacy">
+              <ShieldCheck size={15} aria-hidden="true" />
+              This portal displays student records linked to your verified parent account.
+            </p>
+          </>
+        ) : null}
+      </section>
+    </main>
+  );
+}
+
+export default ParentPortalPage;

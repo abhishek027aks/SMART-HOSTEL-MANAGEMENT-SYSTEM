@@ -1,0 +1,117 @@
+const { randomUUID } = require("node:crypto");
+const cors = require("cors");
+const express = require("express");
+const helmet = require("helmet");
+
+const config = require("./config");
+const authRoutes = require("./routes/authRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const facilityRoutes = require("./routes/facilityRoutes");
+const hostelRoutes = require("./routes/hostelRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const parentRoutes = require("./routes/parentRoutes");
+const allocationRoutes = require("./routes/allocationRoutes");
+const staffRoutes = require("./routes/staffRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const gateRoutes = require("./routes/gateRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const outpassRoutes = require("./routes/outpassRoutes");
+const complaintRoutes = require("./routes/complaintRoutes");
+const helpContactRoutes = require("./routes/helpContactRoutes");
+const noticeRoutes = require("./routes/noticeRoutes");
+const messRoutes = require("./routes/messRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const auditRoutes = require("./routes/auditRoutes");
+const reportRoutes = require("./routes/reportRoutes");
+const securityRoutes = require("./routes/securityRoutes");
+
+const app = express();
+
+app.disable("x-powered-by");
+
+app.use(helmet());
+
+app.use(cors({
+    origin: config.corsOrigin
+}));
+
+app.use((req, res, next) => {
+    const requestId = randomUUID();
+
+    req.requestId = requestId;
+    res.setHeader("X-Request-ID", requestId);
+
+    next();
+});
+
+app.use((req, res, next) => {
+    const startTime = process.hrtime.bigint();
+
+    res.on("finish", () => {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+
+        console.log(
+            `[${new Date().toISOString()}] ${req.requestId} ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs.toFixed(2)}ms`
+        );
+    });
+
+    next();
+});
+
+app.use(express.json({
+    limit: config.jsonBodyLimit
+}));
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok"
+    });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/facilities", facilityRoutes);
+app.use("/api/hostels", hostelRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/parents", parentRoutes);
+app.use("/api/allocations", allocationRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/uploads", uploadRoutes);
+app.use("/api/gate", gateRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/outpasses", outpassRoutes);
+app.use("/api/complaints", complaintRoutes);
+app.use("/api/help-contacts", helpContactRoutes);
+app.use("/api/notices", noticeRoutes);
+app.use("/api/mess", messRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/audit-logs", auditRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/security", securityRoutes);
+
+app.use((req, res) => {
+    res.status(404).json({
+        status: "error",
+        message: "Route not found"
+    });
+});
+
+app.use((err, req, res, next) => {
+    if (err.type === "entity.too.large") {
+        res.status(413).json({
+            status: "error",
+            message: "Request body too large"
+        });
+        return;
+    }
+
+    console.error(err);
+
+    res.status(500).json({
+        status: "error",
+        message: "Internal server error"
+    });
+});
+
+module.exports = app;
+

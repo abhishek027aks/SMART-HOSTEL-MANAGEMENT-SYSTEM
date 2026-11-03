@@ -1,0 +1,481 @@
+
+========== App.jsx ==========
+-- Imports and component/function declarations --
+import {
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useAuth } from "./context/AuthContext.jsx";
+import Login from "./pages/Login.jsx";
+import FacilityManager from "./pages/FacilityManager.jsx";
+import StudentManagement from "./pages/StudentManagement.jsx";
+import AllocationManager from "./pages/AllocationManager.jsx";
+import HostelManagement from "./pages/HostelManagement.jsx";
+import StaffManagement from "./pages/StaffManagement.jsx";
+import ParentManagement from "./pages/ParentManagement.jsx";
+import { apiRequest } from "./services/api.js";
+import AuthenticatedPhoto from "./components/AuthenticatedPhoto.jsx";
+import OwnerProfileEditor from "./components/OwnerProfileEditor.jsx";
+const StudentQrPage =
+const GateScannerPage =
+const ParentPortalPage =
+const PaymentManagement =
+const DASHBOARD_ROLES =
+const REQUIRED_COUNTS =
+const timeFormatter =
+function App
+const hasSummaryRef =
+const requestInProgressRef =
+const controller =
+const loadSummary =
+const payload =
+const intervalId =
+const controller =
+const persistedHostelId =
+const selectedHostelId =
+const hasBeds =
+const hasGateCounts =
+const todayGateActivity =
+const occupancyPercent =
+const displayCount =
+const gateTrend =
+const displayedRangeDays =
+const maxGateTrendValue =
+const formatGateTrendDate =
+const date =
+const metrics =
+const chartDate =
+const entryHeight =
+const exitHeight =
+function SummaryRow
+function SummaryLegend
+function EmptyState
+function PanelTitle
+-- Static JSX className values --
+auth-page qr-page
+auth-card
+auth-page
+auth-card access-card
+auth-brand-mark
+auth-description
+auth-submit
+auth-logout
+app-shell
+sidebar
+brand
+brand-mark
+nav-list
+content
+topbar dashboard-topbar
+dashboard-kicker
+profile-strip
+avatar owner-avatar
+avatar
+profile-copy
+dashboard-refresh-row
+dashboard-range-control
+dashboard-refresh-copy
+dashboard-refresh-button
+hero-strip
+hero-copy
+section-badge
+badge-row
+hostel-chip
+hostel-chip subtle
+hostel-summary-card
+metrics-grid
+operations-grid
+mini-panel
+mini-panel-header
+bar-track
+legend-inline
+dot blue
+dot amber
+status-inline
+dashboard-grid
+panel wide gate-trend-panel
+panel-title gate-trend-title
+legend-inline gate-trend-legend
+gate-trend-empty
+gate-trend-scroll
+gate-trend-chart
+gate-trend-day
+gate-trend-bars
+gate-trend-bar entry
+gate-trend-bar exit
+gate-trend-day-label
+gate-trend-footnote
+panel occupancy-panel
+occupancy-content
+donut
+legend-list
+panel
+activity-list
+activity-row
+mini-avatar
+complaint-list
+complaint-row
+panel wide
+table-scroll
+
+========== pages\Login.jsx ==========
+-- Imports and component/function declarations --
+import { useEffect, useState } from "react";
+import {
+import { useAuth } from "../context/AuthContext.jsx";
+import PublicHostelDirectory from "../components/PublicHostelDirectory.jsx";
+import InternationalPhoneInput, { isValidInternationalPhone } from "../components/InternationalPhoneInput.jsx";
+const INDIAN_STATES_AND_TERRITORIES =
+const CITY_SUGGESTIONS =
+const ROLES =
+const FEATURES =
+const BENEFITS =
+const EMPTY_REGISTRATION =
+const REMEMBERED_IDENTIFIER_KEY =
+const fieldErrors =
+function Login
+const isStudentLogin =
+const rememberedIdentifier =
+const focusAuthCard =
+const handleLoginSubmit =
+const credentials =
+const handleRegistrationSubmit =
+const galleryImages =
+const updateRegisterField =
+const selectRole =
+const updateIdentifier =
+const updateRememberMe =
+const toggleLoginIdentifier =
+-- Static JSX className values --
+landing-page
+landing-header
+landing-header-inner
+brand-block
+brand-mark-home
+brand-copy
+main-nav
+nav-pill
+nav-login-btn
+hero-wrap
+hero-copy-panel
+hero-content
+hero-badges
+hero-intro
+hero-subtext
+hero-actions
+primary-action
+secondary-action
+feature-grid
+feature-icon
+feature-label
+login-panel
+login-box
+login-card-heading
+login-brand-icon
+login-brand-text
+login-caption
+login-mode-toggle
+auth-form landing-form
+login-form-content
+login-fields
+form-field
+link-button
+password-input-wrap
+password-toggle
+login-row-inline
+checkbox-row
+form-hint
+role-select-wrap
+role-grid
+auth-error
+auth-submit landing-submit
+auth-form landing-form register-form
+registration-fields
+registration-section
+trust-section
+section-heading
+section-kicker
+trust-grid
+trust-card
+trust-icon
+landing-contact
+
+========== components\PublicHostelDirectory.jsx ==========
+-- Imports and component/function declarations --
+import { useEffect, useState } from "react";
+import { Building2, Bed, MapPin, Mail, Phone, Search, X, RefreshCw, ChevronLeft, ChevronRight, MessageCircle, Navigation, IndianRupee } from "lucide-react";
+import { API_BASE_URL, apiRequest } from "../services/api.js";
+import "../styles/public-hostels.css";
+const imageUrl =
+const path =
+const locationText =
+const addressText =
+const PRICE_OPTIONS =
+const listedPrices =
+const formatMoney =
+const googleMapsUrl =
+const location =
+const query =
+const whatsappUrl =
+function HostelPhoto
+const source =
+function HostelDetails
+const onKeyDown =
+const setup =
+const gallery =
+export default function PublicHostelDirectory
+const controller =
+const params =
+const search =
+const setup =
+const prices =
+const startingPrice =
+-- Static JSX className values --
+public-hostel-modal-backdrop
+public-hostel-modal
+public-hostel-modal-close
+public-hostel-modal-cover
+public-hostel-modal-content
+public-hostel-kicker
+public-hostel-location
+public-hostel-detail-grid
+public-hostel-pricing
+public-hostel-pricing-list
+public-hostel-pricing-item
+public-hostel-price-note
+public-hostel-extra-charges
+public-hostel-action-row
+public-hostel-action
+public-hostel-action public-hostel-action-whatsapp
+public-hostel-action public-hostel-action-maps
+public-hostel-stats
+public-hostel-room-types
+public-hostel-chip
+public-hostel-gallery
+public-hostel-gallery-photo
+public-hostel-disclaimer
+public-hostels-section
+public-hostels-inner
+public-hostels-heading
+public-hostel-refresh
+public-hostel-search
+public-hostel-search-icon
+public-hostel-directory-status
+public-hostel-state public-hostel-error
+public-hostel-state
+public-hostel-grid
+public-hostel-card
+public-hostel-card-media
+public-hostel-card-photo
+public-hostel-active-label
+public-hostel-card-content
+public-hostel-card-location
+public-hostel-card-address
+public-hostel-price-summary
+public-hostel-card-stats
+public-hostel-card-contact
+public-hostel-action-row public-hostel-action-row-card
+public-hostel-details-button
+public-hostel-pagination
+
+========== components\PaymentPortal.jsx ==========
+-- Imports and component/function declarations --
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import { CheckCircle2, Clock, CreditCard, FileImage, Printer, RefreshCw, Upload } from "lucide-react";
+import { API_BASE_URL, apiRequest } from "../services/api.js";
+import "../styles/payments.css";
+const money =
+const dateLabel =
+const payUri =
+const query =
+const escapeHtml =
+function printReceipt
+const popup =
+export default function PaymentPortal
+const controller =
+const generate =
+const entries =
+const uri =
+const updateDraft =
+const submitProof =
+const draft =
+const body =
+const response =
+const result =
+const draft =
+const canSubmit =
+-- Static JSX className values --
+payment-portal
+payment-heading
+dashboard-kicker
+facility-secondary
+payment-state
+payment-error
+payment-success
+payment-empty
+payment-list
+payment-card
+payment-card-top
+payment-muted
+payment-amount
+payment-detail-grid
+payment-pending-note
+payment-receipt-row
+facility-submit payment-button
+payment-submit-form
+payment-upi-box
+payment-upi-link
+payment-field
+
+========== CSS FILES AND SELECTORS ==========
+
+-- global.css --
+Selector count: 441
+:root
+*
+body
+select
+button
+a
+.app-shell
+.sidebar
+.brand
+.brand-mark
+.brand span
+.brand strong
+.nav-list
+.nav-list a
+.nav-list a:hover
+.content
+.topbar
+.data-toolbar label
+.search-box
+.data-toolbar input
+.profile-strip
+.profile-strip span
+.icon-button
+.icon-button span
+.mini-avatar
+.dashboard-heading
+p
+h1
+.dashboard-heading p
+.hero-strip
+.hero-copy
+.section-badge
+.hero-copy h2
+.badge-row
+.hostel-chip
+
+-- landing.css --
+Selector count: 125
+:root
+html
+body
+textarea
+:where(button, a, input, select, textarea):focus-visible
+.landing-page
+.landing-header
+.landing-header-inner
+.brand-block
+.brand-mark-home
+.brand-copy
+.brand-copy strong
+.brand-copy span
+.main-nav
+.nav-pill
+.nav-pill.active
+.secondary-action
+.nav-login-btn
+.primary-action:hover
+.hero-wrap
+.hero-copy-panel
+.hero-copy-panel::before
+.hero-content
+.hero-badges
+.hero-badges span
+.hero-copy-panel h1
+.hero-copy-panel h1 span
+.hero-intro
+.hero-subtext
+.hero-actions
+.primary-action
+.secondary-action:hover
+.feature-grid
+.feature-card
+.feature-icon
+
+-- payments.css --
+Selector count: 52
+.payment-portal, .payment-management
+.payment-heading
+.payment-heading h2
+.payment-heading p
+.payment-list
+.payment-card, .payment-invoice-form, .payment-empty
+.payment-card-top
+.payment-card h3
+.payment-card p
+.payment-amount
+.payment-muted
+.payment-status
+.payment-status-due
+.payment-status-pending_verification
+.payment-status-paid
+.payment-status-rejected
+.payment-detail-grid
+.payment-detail-grid > div
+.payment-detail-grid span, .payment-upi-box span
+.payment-detail-grid strong
+.payment-submit-form
+.payment-submit-form h4
+.payment-field
+.payment-field span
+.payment-field input, .payment-field select
+.payment-field input[type=file]
+.payment-form-grid
+.payment-field-wide
+.payment-invoice-form h3
+.payment-button
+.payment-button:disabled
+.payment-upi-box
+.payment-upi-box strong
+.payment-upi-box small
+.payment-upi-box img
+
+-- public-hostels.css --
+Selector count: 86
+.public-hostels-section
+.public-hostels-inner
+.public-hostels-heading
+.public-hostel-kicker
+.public-hostels-heading h2
+.public-hostels-heading p
+.public-hostel-pagination button
+.public-hostel-pagination button:hover:not(:disabled)
+.public-hostel-pagination button:disabled
+.public-hostel-search
+.public-hostel-search label
+.public-hostel-search-icon
+.public-hostel-search input
+.public-hostel-search input::placeholder
+.public-hostel-details-button
+.public-hostel-details-button:hover
+.public-hostel-directory-status
+.public-hostel-grid
+.public-hostel-card
+.public-hostel-card:hover
+.public-hostel-card-media
+.public-hostel-card-photo
+.public-hostel-photo-fallback
+.public-hostel-card-photo.public-hostel-photo-fallback
+.public-hostel-active-label
+.public-hostel-card-content
+.public-hostel-card-content h3
+.public-hostel-card-contact
+.public-hostel-card-contact svg
+.public-hostel-card-address
+.public-hostel-card-stats
+.public-hostel-card-stats span
+.public-hostel-card-contact span
+.public-hostel-state
+.public-hostel-state p

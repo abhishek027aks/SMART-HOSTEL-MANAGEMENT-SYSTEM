@@ -1,0 +1,14 @@
+const express = require("express");
+const controller = require("../controllers/helpContactController");
+const requireAuth = require("../middleware/authMiddleware");
+const requireRoles = require("../middleware/roleMiddleware");
+const { requireTenant, tenantMiddleware } = require("../middleware/tenantMiddleware");
+const ROLES = require("../constants/roles");
+const router = express.Router();
+router.use(requireAuth, tenantMiddleware, requireTenant);
+router.get("/", requireRoles(ROLES.OWNER, ROLES.WARDEN, ROLES.GUARD, ROLES.STUDENT, ROLES.PARENT), controller.list);
+router.get("/manage", requireRoles(ROLES.OWNER), controller.manageList);
+router.post("/", requireRoles(ROLES.OWNER), controller.create);
+router.patch("/:id", requireRoles(ROLES.OWNER), controller.update);
+router.delete("/:id", requireRoles(ROLES.OWNER), controller.archive);
+module.exports = router;

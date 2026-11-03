@@ -1,0 +1,12 @@
+const assert = require("node:assert/strict"); const test = require("node:test");
+const Notice = require("../src/models/Notice"); const service = require("../src/services/noticeService");
+const hostelId = "64b64c1a1e2c3d4e5f607181"; const userId = "64b64c1a1e2c3d4e5f607182";
+const req = (body = {}) => ({ auth: { id: userId, role: "OWNER" }, tenant: { hostelId }, body });
+async function swap(key, replacement, work) { const original = Notice[key]; Notice[key] = replacement; try { return await work(); } finally { Notice[key] = original; } }
+test("notice validates content and uses verified hostel identity", async () => {
+  await assert.rejects(service.create(req({ title: "No", body: "bad" })), (err) => err.statusCode === 400);
+  await swap("create", async (record) => record, async () => { const result = await service.create(req({ title: "Water supply", body: "Water supply will pause at 11 PM.", target: "ALL_STUDENTS", priority: "IMPORTANT" })); assert.equal(result.hostelId, hostelId); assert.equal(result.publishedBy, userId); });
+});
+test("notice list pins queries to the verified hostel", async () => {
+  await swap("find", (filter) => { assert.equal(filter.hostelId, hostelId); return { sort: () => ({ limit: () => ({ lean: async () => [] }) }) }; }, async () => assert.deepEqual(await service.list(req()), { items: [] }));
+});

@@ -1,0 +1,11 @@
+const express = require("express");
+const requireAuth = require("../middleware/authMiddleware");
+const requireRoles = require("../middleware/roleMiddleware");
+const { tenantMiddleware, requireTenant } = require("../middleware/tenantMiddleware");
+const controller = require("../controllers/reportController");
+const ROLES = require("../constants/roles");
+const router = express.Router();
+router.use(requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER, ROLES.WARDEN), tenantMiddleware, requireTenant);
+router.get("/summary", controller.summary);
+router.get("/:type.csv", controller.csv);
+module.exports = router;

@@ -1,0 +1,560 @@
+SMART HOSTEL MANAGEMENT SYSTEM - SOURCE AUDIT
+Generated: 2026-10-20 20:33:59
+Read-only report. No source files changed.
+
+==================================================
+FILE: client\src\App.jsx
+==================================================
+62: const { user, token, logout, updateUser, selectedHostelId: activeHostelId, setSelectedHostelId: setActiveHostelId } = useAuth();
+76: const [allocationStudentId, setAllocationStudentId] = useState("");
+86: activeHostelId === ALL_HOSTELS_VALUE
+125: }, [token, user?.role, activeHostelId]);
+162: ? activeHostelId === ALL_HOSTELS_VALUE ||
+163: items.some((h) => h._id === activeHostelId)
+164: : items.some((h) => h._id === activeHostelId);
+167: setActiveHostelId(
+170: : items.find((h) => h._id === user.hostelId)?._id || items[0]?._id || ""
+184: }, [token, user?.role, user?.hostelId, activeHostelId, setActiveHostelId]);
+266: }, [token, user?.role, logout, reloadKey, rangeDays, activeHostelId]);
+280: }, [token, user?.role, section, activeHostelId]);
+286: !activeHostelId ||
+287: activeHostelId === ALL_HOSTELS_VALUE
+301: }, [token, user?.role, activeHostelId, reloadKey]);
+361: const selectedHostelRecord = accessibleHostels.find((h) => h._id === activeHostelId) || null;
+362: const persistedHostelId = activeHostelId && activeHostelId !== ALL_HOSTELS_VALUE
+363: ? activeHostelId
+364: : (hostelInfo?._id || user.hostelId);
+365: const selectedHostelId = activeHostelId === ALL_HOSTELS_VALUE
+367: : persistedHostelId
+368: ? String(persistedHostelId).slice(-6).toUpperCase()
+493: {activeHostelId === ALL_HOSTELS_VALUE ? (
+496: <span>{hostelInfo.name} - {hostelInfo.hostelCode || `Hostel ${selectedHostelId}`}</span>
+499: ) : persistedHostelId ? (
+
+==================================================
+FILE: client\src\components\AuthenticatedPhoto.jsx
+==================================================
+12: if (!value.startsWith("/api/uploads/photos/")) {
+
+==================================================
+FILE: client\src\context\AuthContext.jsx
+==================================================
+6: const SELECTED_HOSTEL_STORAGE_KEY = "shms.selectedHostelId";
+49: const [storedSelectedHostelId, setStoredSelectedHostelId] = useState(() => readStoredSelectedHostel());
+51: const selectedHostelId = storedSelectedHostelId ||
+52: (session?.user?.role === "SYSTEM_ADMIN" ? "__ALL_HOSTELS__" : session?.user?.hostelId || "");
+54: const setSelectedHostelId = useCallback((hostelId) => {
+55: const next = typeof hostelId === "string" ? hostelId.trim() : "";
+67: setStoredSelectedHostelId(next);
+77: setSelectedHostelId(
+78: account?.role === "SYSTEM_ADMIN" ? "__ALL_HOSTELS__" : account?.hostelId || ""
+83: }, [setSelectedHostelId]);
+92: setSelectedHostelId(
+93: account?.role === "SYSTEM_ADMIN" ? "__ALL_HOSTELS__" : account?.hostelId || ""
+98: }, [setSelectedHostelId]);
+126: setSelectedHostelId(response.data.user?.hostelId || "");
+130: }, [setSelectedHostelId]);
+135: setSelectedHostelId("");
+136: }, [setSelectedHostelId]);
+146: selectedHostelId,
+147: setSelectedHostelId,
+153: }), [session, selectedHostelId, setSelectedHostelId, login, googleLogin, registerOwner, logout, updateUser]);
+
+==================================================
+FILE: client\src\pages\AllocationManager.jsx
+==================================================
+6: function AllocationManager({ token, initialStudentId = "", onComplete }) {
+9: const [hostel, setHostel] = useState(null); const [blockId, setBlockId] = useState(""); const [floorId, setFloorId] = useState(""); const [roomId, setRoomId] = useState("");
+10: const [studentId, setStudentId] = useState(initialStudentId); const [studentQuery, setStudentQuery] = useState(""); const [bedId, setBedId] = useState(""); const [allocationDate, setAllocationDate] = useState(today());
+12: useEffect(() => { if (initialStudentId) setStudentId(initialStudentId); }, [initialStudentId]);
+16: apiRequest("/api/allocations/options", { token, signal: controller.signal }),
+17: apiRequest("/api/allocations?limit=100", { token, signal: controller.signal }),
+21: if (!blockId && options.data.blocks.length) setBlockId(options.data.blocks[0]._id);
+29: apiRequest(`/api/students?status=ACTIVE&limit=20${studentQuery.trim() ? `&q=${encodeURIComponent(studentQuery.trim())}` : ""}`, { token, signal: controller.signal })
+32: setStudents(studentResult.data.items.filter((student) => !student.bedId || String(student._id) === studentId));
+35: }, [token, studentQuery, studentId, reload]);
+37: if (!roomId) { setBeds([]); setBedId(""); return undefined; }
+39: apiRequest(`/api/allocations/available-beds?roomId=${encodeURIComponent(roomId)}`, { token, signal: controller.signal })
+40: .then((response) => { setBeds(response.data); if (!response.data.some((bed) => String(bed._id) === bedId)) setBedId(""); })
+43: }, [token, roomId, reload]);
+44: const availableFloors = useMemo(() => floors.filter((floor) => String(floor.blockId) === String(blockId)), [floors, blockId]);
+45: const availableRooms = useMemo(() => rooms.filter((room) => String(room.floorId) === String(floorId) && String(room.blockId) === String(blockId) && !["MAINTENANCE", "RESERVED"].includes(room.status)), [rooms, floorId, blockId]);
+46: const selectedRoom = rooms.find((room) => String(room._id) === String(roomId));
+47: const occupiedCount = allocations.filter((allocation) => String(allocation.roomId) === String(roomId)).length;
+50: const chooseTransfer = (allocation) => { setCurrent(allocation); setMode("transfer"); setStudentId(String(allocation.studentId?._id || allocation.studentId)); const oldBed = allocation.bedId; const oldRoom = oldBed?.roomId?._id || oldBed?.roomId; const room = rooms.find((item) => String(item._id) === String(oldRoom)); if (room) { setBlockId(String(room.blockId)); setFloorId(String(room.floorId)); setRoomId(""); } setBedId(""); setNotice(""); setError(""); };
+55: const payload = { studentId, roomId, bedId, allocationDate };
+57: ? await apiRequest(`/api/allocations/${current._id}/transfer`, { token, method: "POST", body: JSON.stringify({ roomId, bedId }) })
+58: : await apiRequest("/api/allocations", { token, method: "POST", body: JSON.stringify(payload) });
+60: setMode("assign"); setCurrent(null); setBedId(""); setStudentId(""); setAllocationDate(today()); reloadData(); onComplete?.();
+65: const student = allocation.studentId?.name || allocation.studentId?.studentId || "this resident";
+68: try { await apiRequest(`/api/allocations/${allocation._id}`, { token, method: "DELETE" }); setNotice(`${student} was removed from current allocations. Allocation history has been retained.`); reloadData(); onComplete?.(); }
+
+==================================================
+FILE: client\src\pages\Login.jsx
+==================================================
+140: password: "",
+157: password: "Enter your password.",
+169: const [password, setPassword] = useState("");
+170: const [showPassword, setShowPassword] = useState(false);
+172: const [showPasswordHelp, setShowPasswordHelp] = useState(false);
+239: document.getElementById("auth-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+255: if (!password) {
+256: setFieldError(fieldErrors.password);
+271: password,
+354: if (registerForm.password.length < 8) {
+355: setError("Use a password with at least 8 characters.");
+439: <a className="nav-pill" onClick={(event) => { document.querySelectorAll(".nav-pill").forEach((link) => link.classList.remove("active", "is-active", "nav-pill-active", "selected")); event.currentTarget.classList.add("active"); }} href="#home"><Home size={15} aria-hidden="true" />Home</a>
+440: <a className="nav-pill" onClick={(event) => { document.querySelectorAll(".nav-pill").forEach((link) => link.classList.remove("active", "is-active", "nav-pill-active", "selected")); event.currentTarget.classList.add("active"); }} href="#about"><Info size={15} aria-hidden="true" />About</a>
+441: <a className="nav-pill" onClick={(event) => { document.querySelectorAll(".nav-pill").forEach((link) => link.classList.remove("active", "is-active", "nav-pill-active", "selected")); event.currentTarget.classList.add("active"); }} href="#features"><Sparkles size={15} aria-hidden="true" />Features</a>
+442: <a className="nav-pill" onClick={(event) => { document.querySelectorAll(".nav-pill").forEach((link) => link.classList.remove("active", "is-active", "nav-pill-active", "selected")); event.currentTarget.classList.add("active"); }} href="#modules"><LayoutGrid size={15} aria-hidden="true" />Modules</a>
+443: <a className="nav-pill" onClick={(event) => { document.querySelectorAll(".nav-pill").forEach((link) => link.classList.remove("active", "is-active", "nav-pill-active", "selected")); event.currentTarget.classList.add("active"); }} href="#registered-hostels"><Building2 size={15} aria-hidden="true" />Hostels</a>
+444: <a className="nav-pill" onClick={(event) => { document.querySelectorAll(".nav-pill").forEach((link) => link.classList.remove("active", "is-active", "nav-pill-active", "selected")); event.currentTarget.classList.add("active"); }} href="#contact"><Mail size={15} aria-hidden="true" />Contact</a>
+553: <span>Password</span>
+554: <span className="password-input-wrap">
+556: name="password"
+557: type={showPassword ? "text" : "password"}
+558: autoComplete="current-password"
+559: value={password}
+560: onChange={(event) => setPassword(event.target.value)}
+561: aria-invalid={fieldError === fieldErrors.password}
+
+==================================================
+FILE: client\src\pages\ParentManagement.jsx
+==================================================
+12: studentIds: [],
+13: password: "",
+14: confirmPassword: "",
+51: apiRequest(`/api/parents?${params}`, {
+79: const first = await apiRequest("/api/students?page=1&limit=100&status=ACTIVE", {
+93: `/api/students?page=${pageNumber}&limit=100&status=ACTIVE`,
+133: const toggleStudent = (studentId) => {
+136: studentIds: current.studentIds.includes(studentId)
+137: ? current.studentIds.filter((id) => id !== studentId)
+138: : [...current.studentIds, studentId]
+147: const response = await apiRequest(`/api/parents/${parent._id}`, { token });
+158: studentIds: (item.studentIds || []).map((student) =>
+161: password: "",
+162: confirmPassword: "",
+180: if (!form.studentIds.length) {
+185: if (!editing && form.password.length < 8) {
+186: setError("Password must contain at least 8 characters.");
+190: if (form.password && form.password !== form.confirmPassword) {
+191: setError("Password and confirmation do not match.");
+198: studentIds: form.studentIds,
+205: if (form.password) body.password = form.password;
+210: await apiRequest(`/api/parents${editing ? `/${editing}` : ""}`, {
+219: : "Parent account created. Login uses the registered email or mobile number and the chosen password."
+241: await apiRequest(`/api/parents/${parent._id}`, {
+338: {(parent.studentIds || []).map((student) =>
+
+==================================================
+FILE: client\src\pages\ParentPortalPage.jsx
+==================================================
+29: const response = await apiRequest("/api/parents/me", {
+130: Student ID: {student.studentId}
+
+==================================================
+FILE: client\src\pages\StudentManagement.jsx
+==================================================
+8: const EMPTY = { name: "", studentId: "", mobile: "", email: "", photoUrl: "", status: "ACTIVE", password: "", confirmPassword: "" };
+32: apiRequest(`/api/students?${params}`, { token, signal: controller.signal }).then((response) => { setItems(response.data.items); setPagination(response.data.pagination); })
+39: const startEdit = (student) => { setEditing(student._id); setForm({ name: student.name, studentId: student.studentId, mobile: student.mobile || "", email: student.email || "", photoUrl: student.photoUrl || "", status: student.status, password: "", confirmPassword: "" }); setNotice(""); setError(""); };
+50: if (form.password.length < 8) {
+51: setError("Set an initial password with at least 8 characters.");
+54: if (form.password !== form.confirmPassword) {
+55: setError("The password and confirmation do not match.");
+61: delete payload.confirmPassword;
+64: delete payload.password;
+69: await apiRequest(`/api/students${editing ? `/${editing}` : ""}`, {
+78: setNotice(`Student and login account created. Login ID: ${form.studentId}. Login also requires the hostel access code and chosen password.`);
+95: try { const response = await apiRequest(`/api/students/${student._id}`, { token }); setSelected(response.data); }
+100: try { await apiRequest(`/api/students/${student._id}`, { token, method: "PATCH", body: JSON.stringify({ status: student.status === "ACTIVE" ? "INACTIVE" : "ACTIVE" }) }); setNotice("Student status updated."); setReload((current) => current + 1); }
+107: await apiRequest(`/api/students/${student._id}`, { token, method: "DELETE" });
+115: await apiRequest(`/api/students/${student._id}/restore`, { token, method: "POST", body: JSON.stringify({}) });
+120: <div className="facility-heading-row"><div><span className="dashboard-kicker">RESIDENT RECORDS</span><h2 id="students-heading">Students</h2><p>Search and manage resident records in the verified hostel.</p></div><button className="facility-secondary" type="button" onClick={() => { resetForm(); document.getElementById("student-name")?.focus(); }}><Plus size={16} /> Add student</button></div>
+125: {items.length ? <div className="student-table-wrap"><table className="student-table"><thead><tr><th>Photo</th><th>Name</th><th>Student ID</th><th>Mobile</th><th>Room / Bed</th><th>Status</th><th>Allocation</th><th>QR</th><th>Actions</th></tr></thead><tbody>{items.map((student) => <tr key={student._id}><td>{student.photoUrl ? <AuthenticatedPhoto token={token} className="student-table-photo" value={student.photoUrl} /> : "—"}</td><td><button className="student-name-link" type="button" onClick={() => showDetails(student)}><UserRound size={15} />{student.name}</button></td><td>{student.studentId}</td><td>{student.mobile || "—"}</td><td>{student.roomId?.roomNumber || "—"} / {student.bedId?.bedNumber || "—"}</td><td><span className={`student-status ${student.status.toLowerCase()}`}>{showArchived ? "ARCHIVED" : student.status}</span></td><td>{student.allocationStatus}</td><td>{student.qrStatus}</td><td><div className="facility-row-actions">{showArchived ? <button type="button" onClick={() => restoreStudent(student)}>Restore</button> : <><button type="button" onClick={() => startEdit(student)}><Edit3 size={14} /> Edit</button>{student.bedId ? <button type="button" className="archive" onClick={() => onAllocate(student._id)}>Transfer / Release</button> : <button type="button" onClick={() => onAllocate(student._id)}>Assign</button>}<button type="button" className="archive" onClick={() => toggleStatus(student)}>{student.status === "ACTIVE" ? "Deactivate" : "Activate"}</button><button type="button" className="archive" onClick={() => archiveStudent(student)}>Delete</button></>}</div></td></tr>)}</tbody></table></div> : null}
+127: {selected ? <aside className="student-details">{selected.photoUrl ? <AuthenticatedPhoto token={token} className="student-detail-photo" value={selected.photoUrl} alt={`${selected.name} photo`} /> : null}<strong>{selected.name}</strong><span>ID: {selected.studentId}</span><span>Room: {selected.roomId?.roomNumber || "Unassigned"} · Bed: {selected.bedId?.bedNumber || "Unassigned"}</span><span>QR status: {selected.qrStatus}</span></aside> : null}
+129: <form className="facility-panel facility-form" onSubmit={submit}><div className="facility-form-heading"><div><h3>{editing ? "Edit student" : "Add student"}</h3><p>{canCreateLogin ? "Creates a resident record and secure login account." : "Creates a resident record in this hostel."}</p></div>{editing ? <button type="button" className="facility-icon-button" aria-label="Cancel edit" onClick={resetForm}>×</button> : null}</div>{[["name","Full name"],["studentId","Student ID"],["email","Email"]].map(([key,label]) => <label className="facility-field" key={key}><span>{label}</span><input id={key === "name" ? "student-name" : undefined} type={key === "email" ? "email" : "text"} required={key === "name" || key === "studentId"} value={form[key]} onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))} /></label>)}<label className="facility-field"><span>Mobile number (optional)</span><InternationalPhoneInput name="student-mobile" label="Student mobile number" value={form.mobile} onChange={(mobile) => setForm((current) => ({ ...current, mobile }))} /></label>{!editing && canCreateLogin ? <>
+130: <label className="facility-field"><span>Initial password (minimum 8 characters)</span><input type="password" autoComplete="new-password" minLength={8} maxLength={1024} required value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} /></label>
+131: <label className="facility-field"><span>Confirm password</span><input type="password" autoComplete="new-password" required value={form.confirmPassword} onChange={(event) => setForm((current) => ({ ...current, confirmPassword: event.target.value }))} /></label>
+132: <p className="facility-help">Student login uses the Student ID, hostel access code and this password.</p>
+
+==================================================
+FILE: client\src\pages\StudentQrPage.jsx
+==================================================
+(No matching lines)
+
+==================================================
+FILE: client\src\services\api.js
+==================================================
+22: const selectedHostelId = window.sessionStorage.getItem("shms.selectedHostelId");
+24: if (selectedHostelId && !headers.has("X-Hostel-Id")) {
+25: headers.set("X-Hostel-Id", selectedHostelId);
+
+==================================================
+FILE: server\src\app.js
+==================================================
+15: const uploadRoutes = require("./routes/uploadRoutes");
+71: app.use("/api/students", studentRoutes);
+72: app.use("/api/parents", parentRoutes);
+73: app.use("/api/allocations", allocationRoutes);
+75: app.use("/api/uploads", uploadRoutes);
+
+==================================================
+FILE: server\src\controllers\allocationController.js
+==================================================
+(No matching lines)
+
+==================================================
+FILE: server\src\controllers\authController.js
+==================================================
+11: const { hashPassword, verifyPassword } = require("../utils/password");
+13: const { savePhotoBuffer, removeStoredPhoto } = require("../middleware/photoUpload");
+38: const publicUser = (user, hostelId = null, studentId = null) => ({
+45: hostelId,
+46: studentId
+53: const password = typeof body?.password === "string" ? body.password : "";
+118: password.length < 8 || password.length > 1024 ||
+140: password,
+161: message: "Provide valid owner profile details plus hostel registration details. Password must be at least 8 characters."
+255: const passwordHash = await hashPassword(payload.password);
+261: passwordHash,
+267: hostelId: null,
+296: createdOwner.hostelId = createdHostel._id;
+301: hostelId: createdHostel._id,
+347: const { identifier, password, accessCode, hostelId: requestedHostelId, role: requestedRole } = req.body || {};
+350: typeof password !== "string" || password.length < 1 || password.length > 1024 ||
+352: (requestedHostelId !== undefined && (typeof requestedHostelId !== "string" || !requestedHostelId.trim() || requestedHostelId.trim().length > 64)) ||
+357: message: "Provide a valid identifier and password; student login also requires a hostel access code."
+363: let studentId = null;
+364: let accessCodeHostelId = null;
+373: accessCodeHostelId = String(hostel._id);
+375: hostelId: hostel._id,
+376: studentId: identifier.trim(),
+379: }).select("userId studentId").lean();
+384: hostelId: hostel._id,
+
+==================================================
+FILE: server\src\controllers\parentController.js
+==================================================
+(No matching lines)
+
+==================================================
+FILE: server\src\controllers\studentController.js
+==================================================
+(No matching lines)
+
+==================================================
+FILE: server\src\middleware\authMiddleware.js
+==================================================
+33: .select("name email mobile photoUrl role hostelId status isDeleted")
+47: }).select("hostelId").lean();
+48: const memberHostelIds = [...new Set(membershipRecords.map((membership) => String(membership.hostelId)))];
+49: const activeHostels = memberHostelIds.length > 0
+51: _id: { $in: memberHostelIds },
+58: if (!tokenPayload.hostelId || !memberships.includes(tokenPayload.hostelId)) {
+61: } else if (tokenPayload.hostelId !== null) {
+63: _id: tokenPayload.hostelId,
+72: let studentId = null;
+76: hostelId: tokenPayload.hostelId,
+79: }).select("studentId").lean();
+84: studentId = student.studentId;
+94: hostelId: tokenPayload.hostelId,
+96: studentId
+
+==================================================
+FILE: server\src\middleware\paymentProofUpload.js
+==================================================
+3: const upload = multer({
+6: fileFilter: (req, file, callback) => {
+10: const error = new Error("Upload a JPEG, PNG, or WEBP payment screenshot.");
+14: }).single("proof");
+16: const receivePaymentProof = (req, res, next) => upload(req, res, (error) => {
+29: module.exports = { receivePaymentProof };
+
+==================================================
+FILE: server\src\middleware\photoUpload.js
+==================================================
+6: const UPLOAD_ROOT = path.resolve(__dirname, "..", "..", "uploads");
+21: fileFilter: (req, file, callback) => callback(null, TYPES.has(file.mimetype))
+33: fileFilter: (req, file, callback) => {
+43: const handleGalleryUpload = (req, res, next) => receiveGallery(req, res, (error) => {
+49: return res.status(400).json({ status: "error", message: "Upload no more than 8 gallery photos." });
+53: : "Upload up to 8 JPEG, PNG, or WEBP photos." });
+63: const handlePhotoUpload = (req, res, next) => receivePhoto(req, res, (error) => {
+66: return res.status(400).json({ status: "error", message: "Upload one JPEG, PNG, or WEBP photo." });
+74: throw Object.assign(new Error("The uploaded file is not a valid JPEG, PNG, or WEBP image."), { statusCode: 400 });
+77: const directory = path.join(UPLOAD_ROOT, "photos");
+86: ? `/api/uploads/public/photos/${filename}`
+87: : `/api/uploads/photos/${filename}`
+93: const directory = path.resolve(UPLOAD_ROOT, "photos") + path.sep;
+96: throw new Error("Refusing to remove a file outside the photo upload directory.");
+115: handlePhotoUpload,
+116: handleGalleryUpload,
+120: UPLOAD_ROOT,
+
+==================================================
+FILE: server\src\models\Allocation.js
+==================================================
+3: const allocationSchema = new mongoose.Schema({
+4: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+5: studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+6: bedId: { type: mongoose.Schema.Types.ObjectId, ref: "Bed", required: true },
+7: roomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true, index: true },
+8: allocatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+11: releasedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+13: transferFrom: { type: mongoose.Schema.Types.ObjectId, ref: "Allocation", default: null }
+16: allocationSchema.index({ hostelId: 1, studentId: 1, status: 1 });
+17: allocationSchema.index({ hostelId: 1, bedId: 1, status: 1 });
+18: allocationSchema.index({ studentId: 1 }, { unique: true, partialFilterExpression: { status: "ACTIVE" } });
+19: allocationSchema.index({ bedId: 1 }, { unique: true, partialFilterExpression: { status: "ACTIVE" } });
+21: module.exports = mongoose.model("Allocation", allocationSchema);
+
+==================================================
+FILE: server\src\models\Bed.js
+==================================================
+3: const bedSchema = new mongoose.Schema(
+5: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+6: roomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true, index: true },
+19: bedSchema.index({ hostelId: 1, roomId: 1, bedNumber: 1 }, { unique: true });
+21: module.exports = mongoose.model("Bed", bedSchema);
+
+==================================================
+FILE: server\src\models\Block.js
+==================================================
+3: const blockSchema = new mongoose.Schema(
+5: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+13: blockSchema.index({ hostelId: 1, name: 1 }, { unique: true });
+15: module.exports = mongoose.model("Block", blockSchema);
+
+==================================================
+FILE: server\src\models\Floor.js
+==================================================
+3: const floorSchema = new mongoose.Schema(
+5: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+6: blockId: { type: mongoose.Schema.Types.ObjectId, ref: "Block", required: true, index: true },
+15: floorSchema.index({ hostelId: 1, blockId: 1, number: 1 }, { unique: true });
+17: module.exports = mongoose.model("Floor", floorSchema);
+
+==================================================
+FILE: server\src\models\HostelMembership.js
+==================================================
+4: const hostelMembershipSchema = new mongoose.Schema(
+6: userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+7: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+10: assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+16: hostelMembershipSchema.index({ userId: 1, hostelId: 1 }, {
+20: hostelMembershipSchema.index({ hostelId: 1, role: 1, status: 1 });
+22: module.exports = mongoose.model("HostelMembership", hostelMembershipSchema);
+
+==================================================
+FILE: server\src\models\Parent.js
+==================================================
+3: const parentSchema = new mongoose.Schema(
+5: hostelId: {
+6: type: mongoose.Schema.Types.ObjectId,
+12: type: mongoose.Schema.Types.ObjectId,
+28: studentIds: {
+30: type: mongoose.Schema.Types.ObjectId,
+56: parentSchema.index(
+57: { hostelId: 1, parentId: 1 },
+61: parentSchema.index(
+62: { hostelId: 1, userId: 1 },
+69: parentSchema.index({ hostelId: 1, studentIds: 1, isDeleted: 1 });
+71: module.exports = mongoose.model("Parent", parentSchema);
+
+==================================================
+FILE: server\src\models\Room.js
+==================================================
+3: const roomSchema = new mongoose.Schema(
+5: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+6: blockId: { type: mongoose.Schema.Types.ObjectId, ref: "Block", required: true, index: true },
+7: floorId: { type: mongoose.Schema.Types.ObjectId, ref: "Floor", required: true, index: true },
+22: roomSchema.index({ hostelId: 1, floorId: 1, roomNumber: 1 }, { unique: true });
+24: module.exports = mongoose.model("Room", roomSchema);
+
+==================================================
+FILE: server\src\models\Student.js
+==================================================
+3: const studentSchema = new mongoose.Schema(
+5: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", required: true, index: true },
+6: userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+7: studentId: { type: String, required: true, trim: true, index: true },
+12: blockId: { type: mongoose.Schema.Types.ObjectId, ref: "Block", default: null },
+13: floorId: { type: mongoose.Schema.Types.ObjectId, ref: "Floor", default: null },
+14: roomId: { type: mongoose.Schema.Types.ObjectId, ref: "Room", default: null },
+15: bedId: { type: mongoose.Schema.Types.ObjectId, ref: "Bed", default: null },
+22: studentSchema.index({ hostelId: 1, studentId: 1 }, { unique: true });
+24: module.exports = mongoose.model("Student", studentSchema);
+
+==================================================
+FILE: server\src\models\User.js
+==================================================
+5: const userSchema = new mongoose.Schema(
+7: hostelId: { type: mongoose.Schema.Types.ObjectId, ref: "Hostel", default: null, index: true },
+12: passwordHash: { type: String, required: true },
+23: module.exports = mongoose.model("User", userSchema);
+
+==================================================
+FILE: server\src\routes\allocationRoutes.js
+==================================================
+10: router.get("/options", controller.options);
+11: router.get("/available-beds", controller.availableBeds);
+12: router.get("/", controller.list);
+13: router.post("/", controller.assign);
+14: router.post("/:id/release", controller.release);
+16: router.delete("/:id", controller.release);
+17: router.post("/:id/transfer", controller.transfer);
+
+==================================================
+FILE: server\src\routes\authRoutes.js
+==================================================
+4: const { handleGalleryUpload } = require("../middleware/photoUpload");
+8: router.post("/login", authController.login);
+9: router.post("/google", authController.googleLogin);
+10: router.post("/register", handleGalleryUpload, authController.registerOwner);
+11: router.post("/register-owner", handleGalleryUpload, authController.registerOwner);
+12: router.get("/hostels", requireAuth, authController.listAccessibleHostels);
+13: router.get("/me", requireAuth, authController.getCurrentUser);
+14: router.patch("/me", requireAuth, authController.updateCurrentOwner);
+
+==================================================
+FILE: server\src\routes\parentRoutes.js
+==================================================
+10: router.get("/me", requireAuth, requireRoles(ROLES.PARENT), tenantMiddleware, requireTenant, controller.getMine);
+18: router.get("/", controller.list);
+19: router.post("/", controller.create);
+20: router.get("/:id", controller.get);
+21: router.patch("/:id", controller.update);
+22: router.delete("/:id", controller.archive);
+
+==================================================
+FILE: server\src\routes\studentRoutes.js
+==================================================
+10: router.get("/", controller.list);
+11: router.post("/", controller.create);
+12: router.get("/:id", controller.get);
+13: router.patch("/:id", controller.update);
+14: router.delete("/:id", controller.archive);
+15: router.post("/:id/restore", controller.restore);
+
+==================================================
+FILE: server\src\routes\uploadRoutes.js
+==================================================
+6: const { handlePhotoUpload, savePhoto } = require("../middleware/photoUpload");
+12: const { UPLOAD_ROOT } = require("../middleware/photoUpload");
+16: router.get("/public/photos/:filename", async (req, res, next) => {
+22: const photoUrl = `/api/uploads/public/photos/${req.params.filename}`;
+33: return res.sendFile(path.join(UPLOAD_ROOT, "photos", req.params.filename), (error) => {
+43: router.get(
+54: const photoUrl = `/api/uploads/photos/${req.params.filename}`;
+56: Student.exists({ hostelId: req.tenant.hostelId, photoUrl }),
+57: Hostel.exists({ _id: req.tenant.hostelId, photoUrl, isDeleted: { $ne: true } })
+59: let staff = await User.exists({ _id: req.auth.id, hostelId: req.tenant.hostelId, photoUrl, isDeleted: { $ne: true } });
+62: hostelId: req.tenant.hostelId,
+68: hostelId: req.tenant.hostelId,
+76: return res.sendFile(path.join(UPLOAD_ROOT, "photos", req.params.filename), (error) => {
+84: router.post(
+95: return res.status(403).json({ status: "error", message: "Only the hostel owner can upload this photo." });
+99: handlePhotoUpload,
+
+==================================================
+FILE: server\src\services\allocationService.js
+==================================================
+24: const syncRoomStatus = async (session, hostelId, roomId) => {
+26: Room.findOne({ _id: roomId, hostelId, ...activeRecord }).session(session),
+27: Allocation.countDocuments({ hostelId, roomId, status: "ACTIVE" }).session(session)
+36: const hostelId = req.tenant.hostelId;
+38: Block.find({ hostelId, ...activeRecord, status: "ACTIVE" }).select("name").sort({ name: 1 }).lean(),
+39: Floor.find({ hostelId, ...activeRecord, status: "ACTIVE" }).select("name number blockId").sort({ number: 1 }).lean(),
+40: Room.find({ hostelId, ...activeRecord }).select("roomNumber roomType capacity status blockId floorId").sort({ roomNumber: 1 }).lean(),
+41: Bed.find({ hostelId, ...activeRecord, status: "AVAILABLE" }).select("bedNumber roomId status").sort({ bedNumber: 1 }).lean()
+52: Allocation.find(filter).populate("studentId", "name studentId mobile").populate({ path: "bedId", select: "bedNumber roomId", populate: { path: "roomId", select: "roomNumber roomType" } }).sort({ allocationDate: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+53: Allocation.countDocuments(filter)
+59: const roomId = identifier(req.query.roomId, "roomId");
+60: const room = await Room.findOne(hostelScope(req, { _id: roomId, ...activeRecord })).select("_id capacity status").lean();
+63: return Bed.find(hostelScope(req, { roomId, status: "AVAILABLE", ...activeRecord })).select("bedNumber roomId status").sort({ bedNumber: 1 }).lean();
+66: const verifyHierarchy = async (hostelId, bed, requestedRoomId, session) => {
+67: const room = await Room.findOne({ _id: requestedRoomId, hostelId, ...activeRecord }).session(session).lean();
+68: if (!room || String(bed.roomId) !== String(room._id)) throw httpError(404, "Bed does not belong to the selected room in this hostel.");
+71: Block.findOne({ _id: room.blockId, hostelId, ...activeRecord, status: "ACTIVE" }).session(session).select("_id").lean(),
+72: Floor.findOne({ _id: room.floorId, hostelId, ...activeRecord, status: "ACTIVE" }).session(session).select("_id blockId").lean()
+74: if (!block || !floor || String(floor.blockId) !== String(room.blockId)) throw httpError(409, "Room hierarchy is inactive or inconsistent.");
+75: const bedCount = await Bed.countDocuments({ hostelId, roomId: room._id, ...activeRecord }).session(session);
+91: const studentId = identifier(req.body?.studentId, "studentId");
+92: const bedId = identifier(req.body?.bedId, "bedId");
+93: const roomId = identifier(req.body?.roomId, "roomId");
+94: if (req.body?.hostelId && String(req.body.hostelId) !== req.tenant.hostelId) throw httpError(403, "The requested hostel does not match your verified hostel context.");
+97: const hostelId = req.tenant.hostelId;
+
+==================================================
+FILE: server\src\services\parentService.js
+==================================================
+7: const { hashPassword } = require("../utils/password");
+15: const PHOTO_PATH = /^\/api\/uploads\/photos\/[a-f\d-]{36}\.(?:jpg|png|webp)$/i;
+23: ? ["name", "email", "mobile", "photoUrl", "relationship", "studentIds", "status", "password"]
+24: : ["parentId", "name", "email", "mobile", "photoUrl", "relationship", "studentIds", "status", "password"];
+58: throw httpError(400, "photoUrl must be an uploaded photo reference or valid HTTP(S) URL.");
+67: if (key === "password" &&
+69: throw httpError(400, "password must contain 8 to 1024 characters.");
+71: if (key === "studentIds") {
+76: throw httpError(400, "Every studentIds entry must be a valid student identifier.");
+83: data[key] = typeof value === "string" && key !== "password"
+89: for (const key of ["parentId", "name", "relationship", "studentIds", "password"]) {
+104: const findValidStudents = async (req, studentIds, session) => {
+106: _id: { $in: studentIds },
+107: hostelId: req.tenant.hostelId,
+115: if (students.length !== studentIds.length) {
+151: await findValidStudents(req, data.studentIds, session);
+155: hostelId: req.tenant.hostelId,
+160: passwordHash: await hashPassword(data.password),
+169: hostelId: req.tenant.hostelId,
+173: studentIds: data.studentIds,
+181: hostelId: req.tenant.hostelId,
+197: studentIds: parent.studentIds.map(String),
+232: hostelId: req.tenant.hostelId,
+240: hostelId: req.tenant.hostelId,
+255: path: "studentIds",
+
+==================================================
+FILE: server\src\services\studentService.js
+==================================================
+7: const { hashPassword } = require("../utils/password");
+23: if (q) filter.$or = ["name", "studentId", "mobile", "email"].map((field) => ({ [field]: { $regex: escapeRegex(q), $options: "i" } }));
+25: Student.find(filter).select("name studentId mobile email photoUrl status roomId bedId blockId floorId createdAt updatedAt").populate("roomId", "roomNumber roomType").populate("bedId", "bedNumber status").sort({ createdAt: -1, _id: 1 }).skip((page - 1) * limit).limit(limit).lean(),
+26: Student.countDocuments(filter)
+28: return { items: items.map((item) => ({ ...item, allocationStatus: item.bedId ? "ALLOCATED" : "UNALLOCATED", qrStatus: "NOT_CONFIGURED" })), pagination: { page, limit, total, pages: Math.ceil(total / limit) } };
+33: const allowed = partial ? ["name", "studentId", "mobile", "email", "photoUrl", "status"] : ["name", "studentId", "mobile", "email", "photoUrl", "status", "password"];
+34: const unknown = Object.keys(body).filter((field) => !allowed.includes(field) && field !== "hostelId");
+40: if (["name", "studentId"].includes(key) && (typeof value !== "string" || !value.trim() || value.trim().length > 128)) throw httpError(400, `${key} must be a non-empty string of at most 128 characters.`);
+43: if (key === "photoUrl" && (typeof value !== "string" || value.length > 2048 || (value && !(/^\/api\/uploads\/photos\/[a-f\d-]{36}\.(?:jpg|png|webp)$/i.test(value) || /^https?:\/\//i.test(value))))) throw httpError(400, "photoUrl must be an uploaded photo reference or valid HTTP(S) URL.");
+44: if (key === "password" && (typeof value !== "string" || value.length < 8 || value.length > 1024)) throw httpError(400, "password must contain 8 to 1024 characters.");
+46: data[key] = typeof value === "string" && key !== "password" ? value.trim() : value;
+49: for (const required of ["name", "studentId"]) if (!data[required]) throw httpError(400, `${required} is required.`);
+51: if (data.status === "INACTIVE" && body.bedId) throw httpError(400, "Release the student allocation before deactivating the student.");
+57: if (req.body?.hostelId && String(req.body.hostelId) !== String(req.tenant.hostelId)) {
+62: const password = data.password;
+63: delete data.password;
+65: if (password !== undefined && (
+73: if (password === undefined) {
+113: hostelId: req.tenant.hostelId,
+117: passwordHash: await hashPassword(password),
+135: hostelId: req.tenant.hostelId,
+147: loginId: student.studentId
+166: const student = await Student.findOne(hostelScope(req, { _id: req.params.id, isDeleted: { $ne: true } })).populate("roomId", "roomNumber roomType").populate("bedId", "bedNumber status").lean();
+168: return { ...student, allocationStatus: student.bedId ? "ALLOCATED" : "UNALLOCATED", qrStatus: "NOT_CONFIGURED" };
+173: if (req.body?.hostelId && String(req.body.hostelId) !== String(req.tenant.hostelId)) throw httpError(403, "The requested hostel does not match your verified hostel context.");
+
+==================================================
+FILE: server\src\utils\password.js
+==================================================
+12: const hashPassword = async (password) => {
+13: if (typeof password !== "string" || password.length < 1 || password.length > 1024) {
+14: throw new TypeError("Password must contain between 1 and 1024 characters.");
+18: const key = await scryptAsync(password, salt, KEY_LENGTH, {
+28: const verifyPassword = async (password, encodedHash) => {
+29: if (typeof password !== "string" || password.length > 1024 || typeof encodedHash !== "string") {
+44: const actualKey = await scryptAsync(password, Buffer.from(saltHex, "hex"), KEY_LENGTH, {
+55: hashPassword,
+56: verifyPassword
+

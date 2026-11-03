@@ -1,0 +1,56 @@
+﻿# Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+*.pid
+*.seed
+
+# Build output
+dist/
+build/
+coverage/
+
+# Temporary files
+tmp/
+temp/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / editor files
+.vscode/
+.idea/
+
+# Local database / generated files
+*.local
+*.sqlite
+*.sqlite3
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Generated uploads
+uploads/
+
+# Backup files
+*.bak
+*.backup
+
+# Certificates / private keys
+*.pem
+*.key
+*.crt

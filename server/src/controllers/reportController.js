@@ -1,0 +1,4 @@
+const reports = require("../services/reportService");
+const respond = (operation) => async (req, res, next) => { try { return res.json({ status: "success", data: await operation(req) }); } catch (error) { if (error.statusCode) return res.status(error.statusCode).json({ status: "error", message: error.message }); return next(error); } };
+const csv = async (req, res, next) => { try { const result = await reports.csv(req, req.params.type); res.setHeader("Content-Type", "text/csv; charset=utf-8"); res.setHeader("Content-Disposition", `attachment; filename="${result.filename}"`); return res.send(result.content); } catch (error) { if (error.statusCode) return res.status(error.statusCode).json({ status: "error", message: error.message }); return next(error); } };
+module.exports = { summary: respond((req) => reports.summary(req)), csv };

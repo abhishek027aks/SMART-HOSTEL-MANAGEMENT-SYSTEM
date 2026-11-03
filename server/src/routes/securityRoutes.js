@@ -1,0 +1,4 @@
+const express = require("express"); const controller = require("../controllers/securityController"); const requireAuth = require("../middleware/authMiddleware"); const requireRoles = require("../middleware/roleMiddleware"); const { tenantMiddleware, requireTenant } = require("../middleware/tenantMiddleware"); const ROLES = require("../constants/roles");
+const router = express.Router(); router.use(requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER, ROLES.WARDEN, ROLES.GUARD), tenantMiddleware, requireTenant);
+router.get("/cameras", controller.listCameras); router.get("/events", controller.listEvents); router.post("/events", controller.createEvent); router.post("/events/:id/resolve", controller.resolveEvent); router.post("/cameras", requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER), controller.createCamera); router.patch("/cameras/:id", requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER), controller.updateCamera);
+module.exports = router;

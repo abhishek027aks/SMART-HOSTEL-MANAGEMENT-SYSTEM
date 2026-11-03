@@ -1,0 +1,3 @@
+const service = require("../services/securityService");
+const respond = (operation, status = 200) => async (req, res, next) => { try { return res.status(status).json({ status: "success", data: await operation(req) }); } catch (error) { if (error.statusCode) return res.status(error.statusCode).json({ status: "error", message: error.message }); return next(error); } };
+module.exports = { createCamera: respond(service.createCamera, 201), createEvent: respond(service.createEvent, 201), listCameras: respond(service.listCameras), listEvents: respond(service.listEvents), resolveEvent: respond(service.resolveEvent), updateCamera: respond(service.updateCamera) };

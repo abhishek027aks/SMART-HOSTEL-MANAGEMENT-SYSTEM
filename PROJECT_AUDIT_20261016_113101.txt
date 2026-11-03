@@ -1,0 +1,399 @@
+SMART HOSTEL MANAGEMENT SYSTEM - PROJECT AUDIT
+Generated: 10/16/2026 11:31:14
+Project root: F:\Project\SMART HOSTEL MANAGEMENT SYSTEM
+
+===== SOURCE FILE INVENTORY =====
+
+[client\src]
+client\src\App.jsx	30150 bytes
+client\src\App.jsx.bak_payments_20261016_111911	30267 bytes
+client\src\main.jsx	378 bytes
+client\src\components\AuthenticatedPhoto.jsx	1350 bytes
+client\src\components\InternationalPhoneInput.jsx	2496 bytes
+client\src\components\InternationalPhoneInput.jsx.bak_20261014_204626	2380 bytes
+client\src\components\OwnerProfileEditor.jsx	2003 bytes
+client\src\components\PaymentPortal.jsx	13860 bytes
+client\src\components\PhotoField.jsx	8387 bytes
+client\src\components\PublicHostelDirectory.jsx	18962 bytes
+client\src\components\PublicHostelDirectory.jsx.bak_pricing_20261016_105346	13116 bytes
+client\src\components\PublicHostelDirectory.jsx.bak_pricing_20261016_110433	13116 bytes
+client\src\context\AuthContext.jsx	2516 bytes
+client\src\pages\AllocationManager.jsx	12503 bytes
+client\src\pages\AllocationManager.jsx.bak_20261016_101604	12449 bytes
+client\src\pages\FacilityManager.jsx	17265 bytes
+client\src\pages\FacilityManager.jsx.bak_20261016_101604	14092 bytes
+client\src\pages\FacilityManager.jsx.bak_payments_20261016_111911	17251 bytes
+client\src\pages\FacilityManager.jsx.bak_pricing_20261016_105346	14276 bytes
+client\src\pages\FacilityManager.jsx.bak_pricing_20261016_110433	14276 bytes
+client\src\pages\GateScannerPage.jsx	8037 bytes
+client\src\pages\HostelManagement.jsx	7523 bytes
+client\src\pages\Login.jsx	30004 bytes
+client\src\pages\Login.jsx.bak_20261016_103841	28657 bytes
+client\src\pages\Login.jsx.bak_navfix_20261016_104612	28781 bytes
+client\src\pages\Login.jsx.pre_repair_20261016_104135	28894 bytes
+client\src\pages\ParentManagement.jsx	19264 bytes
+client\src\pages\ParentPortalPage.jsx	6299 bytes
+client\src\pages\ParentPortalPage.jsx.bak_payments_20261016_111911	6180 bytes
+client\src\pages\ParentPortalPage.jsx.bak_repair_20261016_112152	6241 bytes
+client\src\pages\PaymentManagement.jsx	10019 bytes
+client\src\pages\StaffManagement.jsx	11681 bytes
+client\src\pages\StudentManagement.jsx	12179 bytes
+client\src\pages\StudentQrPage.jsx	5288 bytes
+client\src\pages\StudentQrPage.jsx.bak_payments_20261016_111911	5174 bytes
+client\src\pages\StudentQrPage.jsx.bak_repair_20261016_112152	5220 bytes
+client\src\services\api.js	1204 bytes
+client\src\styles\global.css	65458 bytes
+client\src\styles\landing.css	22236 bytes
+client\src\styles\landing.css.bak_navfix_20261016_104612	22236 bytes
+client\src\styles\payments.css	4857 bytes
+client\src\styles\public-hostels.css	13803 bytes
+client\src\styles\public-hostels.css.bak_pricing_20261016_105346	11327 bytes
+client\src\styles\public-hostels.css.bak_pricing_20261016_110433	11327 bytes
+
+[server\src]
+server\src\app.js	2603 bytes
+server\src\app.js.bak_payments_20261016_111911	2505 bytes
+server\src\config.js	1316 bytes
+server\src\server.js	1180 bytes
+server\src\config\db.js	241 bytes
+server\src\constants\roles.js	200 bytes
+server\src\controllers\allocationController.js	743 bytes
+server\src\controllers\authController.js	17468 bytes
+server\src\controllers\dashboardController.js	881 bytes
+server\src\controllers\facilityController.js	720 bytes
+server\src\controllers\gateController.js	1022 bytes
+server\src\controllers\hostelController.js	16327 bytes
+server\src\controllers\hostelController.js.bak_20261016_103841	10752 bytes
+server\src\controllers\hostelController.js.bak_payments_20261016_111911	14916 bytes
+server\src\controllers\hostelController.js.bak_pricing_20261016_105346	12657 bytes
+server\src\controllers\hostelController.js.bak_pricing_20261016_110433	12657 bytes
+server\src\controllers\hostelController.js.pre_repair_20261016_104135	14845 bytes
+server\src\controllers\parentController.js	748 bytes
+server\src\controllers\paymentController.js	1387 bytes
+server\src\controllers\staffController.js	692 bytes
+server\src\controllers\studentController.js	1459 bytes
+server\src\middleware\authMiddleware.js	3614 bytes
+server\src\middleware\paymentProofUpload.js	1003 bytes
+server\src\middleware\photoUpload.js	2567 bytes
+server\src\middleware\roleMiddleware.js	802 bytes
+server\src\middleware\tenantMiddleware.js	1899 bytes
+server\src\models\Allocation.js	1363 bytes
+server\src\models\Bed.js	769 bytes
+server\src\models\Block.js	569 bytes
+server\src\models\Complaint.js	915 bytes
+server\src\models\EntryExit.js	685 bytes
+server\src\models\FeePayment.js	1708 bytes
+server\src\models\Floor.js	732 bytes
+server\src\models\GateQrToken.js	1082 bytes
+server\src\models\Hostel.js	2135 bytes
+server\src\models\Hostel.js.bak_payments_20261016_111911	1970 bytes
+server\src\models\Hostel.js.bak_pricing_20261016_105346	1385 bytes
+server\src\models\Hostel.js.bak_pricing_20261016_110433	1385 bytes
+server\src\models\HostelMembership.js	1003 bytes
+server\src\models\Outpass.js	775 bytes
+server\src\models\Parent.js	1793 bytes
+server\src\models\Room.js	1050 bytes
+server\src\models\StaffAudit.js	716 bytes
+server\src\models\Student.js	1298 bytes
+server\src\models\User.js	899 bytes
+server\src\routes\allocationRoutes.js	940 bytes
+server\src\routes\allocationRoutes.js.bak_20261016_101604	812 bytes
+server\src\routes\authRoutes.js	521 bytes
+server\src\routes\dashboardRoutes.js	530 bytes
+server\src\routes\facilityRoutes.js	1322 bytes
+server\src\routes\gateRoutes.js	726 bytes
+server\src\routes\hostelRoutes.js	1316 bytes
+server\src\routes\hostelRoutes.js.bak_20261016_103841	1272 bytes
+server\src\routes\hostelRoutes.js.pre_repair_20261016_104135	1363 bytes
+server\src\routes\parentRoutes.js	843 bytes
+server\src\routes\paymentRoutes.js	1366 bytes
+server\src\routes\staffRoutes.js	792 bytes
+server\src\routes\studentRoutes.js	776 bytes
+server\src\routes\uploadRoutes.js	3422 bytes
+server\src\services\allocationService.js	11966 bytes
+server\src\services\dashboardService.js	5964 bytes
+server\src\services\facilityService.js	15539 bytes
+server\src\services\gateService.js	5219 bytes
+server\src\services\parentService.js	19606 bytes
+server\src\services\paymentService.js	10197 bytes
+server\src\services\staffService.js	12941 bytes
+server\src\services\studentService.js	10356 bytes
+server\src\utils\hostelScope.js	297 bytes
+server\src\utils\password.js	1782 bytes
+server\src\utils\token.js	3396 bytes
+
+[server\tests]
+(folder not found)
+
+[client\public]
+(folder not found)
+
+===== CONFIGURATION FILES =====
+
+----- client\package.json -----
+{
+  "name": "smart-hostel-management-client",
+  "version": "1.0.0",
+  "description": "Frontend for Smart Hostel Management System",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "npm run build"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "html5-qrcode": "^2.3.8",
+    "lucide-react": "^1.52.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-phone-input-2": "^2.15.1",
+    "vite": "^8.3.2"
+  }
+}
+
+----- server\package.json -----
+{
+  "name": "smart-hostel-management-server",
+  "version": "1.0.0",
+  "description": "Backend API for Smart Hostel Management System",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "test": "node --check src/app.js && node --check src/config.js && node --check src/server.js && node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "mongoose": "^9.11.0",
+    "multer": "^2.4.0"
+  }
+}
+
+----- client\vite.config.js -----
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      "/api": "http://localhost:5000",
+      "/health": "http://localhost:5000"
+    }
+  }
+});
+
+----- client\vite.config.ts -----
+(file not found)
+
+----- server\src\app.js -----
+const { randomUUID } = require("node:crypto");
+const cors = require("cors");
+const express = require("express");
+const helmet = require("helmet");
+
+const config = require("./config");
+const authRoutes = require("./routes/authRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const facilityRoutes = require("./routes/facilityRoutes");
+const hostelRoutes = require("./routes/hostelRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const parentRoutes = require("./routes/parentRoutes");
+const allocationRoutes = require("./routes/allocationRoutes");
+const staffRoutes = require("./routes/staffRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const gateRoutes = require("./routes/gateRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+
+const app = express();
+
+app.disable("x-powered-by");
+
+app.use(helmet());
+
+app.use(cors({
+    origin: config.corsOrigin
+}));
+
+app.use((req, res, next) => {
+    const requestId = randomUUID();
+
+    req.requestId = requestId;
+    res.setHeader("X-Request-ID", requestId);
+
+    next();
+});
+
+app.use((req, res, next) => {
+    const startTime = process.hrtime.bigint();
+
+    res.on("finish", () => {
+        const endTime = process.hrtime.bigint();
+        const durationMs = Number(endTime - startTime) / 1_000_000;
+
+        console.log(
+            `[${new Date().toISOString()}] ${req.requestId} ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs.toFixed(2)}ms`
+        );
+    });
+
+    next();
+});
+
+app.use(express.json({
+    limit: config.jsonBodyLimit
+}));
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok"
+    });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/facilities", facilityRoutes);
+app.use("/api/hostels", hostelRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/parents", parentRoutes);
+app.use("/api/allocations", allocationRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/uploads", uploadRoutes);
+app.use("/api/gate", gateRoutes);
+app.use("/api/payments", paymentRoutes);
+
+app.use((req, res) => {
+    res.status(404).json({
+        status: "error",
+        message: "Route not found"
+    });
+});
+
+app.use((err, req, res, next) => {
+    if (err.type === "entity.too.large") {
+        res.status(413).json({
+            status: "error",
+            message: "Request body too large"
+        });
+        return;
+    }
+
+    console.error(err);
+
+    res.status(500).json({
+        status: "error",
+        message: "Internal server error"
+    });
+});
+
+module.exports = app;
+
+
+----- server\src\config.js -----
+const path = require("node:path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", "..", ".env") });
+
+const parseOrigins = (value, fallback) => {
+    if (!value) {
+        return fallback;
+    }
+
+    return value
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+};
+
+const rawPort = process.env.PORT || "5000";
+const jsonBodyLimit = process.env.JSON_BODY_LIMIT || "1mb";
+const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart_hostel_management";
+const corsOrigin = parseOrigins(
+    process.env.CORS_ORIGIN,
+    [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174"
+    ]
+);
+const jwtSecret = process.env.JWT_SECRET || "";
+
+const port = Number.parseInt(rawPort, 10);
+
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error("PORT must be a valid TCP port between 1 and 65535.");
+}
+
+const config = {
+    nodeEnv: process.env.NODE_ENV || "development",
+    port,
+    jsonBodyLimit,
+    mongoUri,
+    corsOrigin,
+    jwtSecret,
+    validateAuthConfig() {
+        if (Buffer.byteLength(jwtSecret, "utf8") < 32) {
+            throw new Error("JWT_SECRET must be configured with at least 32 bytes.");
+        }
+    }
+};
+
+module.exports = config;
+
+----- client\src\services\api.js -----
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+export async function apiRequest(path, { token, signal, ...options } = {}) {
+  const headers = new Headers(options.headers || {});
+
+  if (options.body !== undefined && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+      signal
+    });
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw error;
+    }
+    if (error instanceof TypeError) {
+      throw new ApiError("Unable to connect to the server. Check your connection and try again.", 0);
+    }
+    throw error;
+  }
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new ApiError(payload?.message || "The request could not be completed.", response.status);
+  }
+
+  return payload;
+}

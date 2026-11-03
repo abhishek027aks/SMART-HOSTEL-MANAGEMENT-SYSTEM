@@ -1,0 +1,21 @@
+const express = require("express");
+const controller = require("../controllers/hostelController");
+const requireAuth = require("../middleware/authMiddleware");
+const requireRoles = require("../middleware/roleMiddleware");
+const ROLES = require("../constants/roles");
+const { requireTenant, tenantMiddleware } = require("../middleware/tenantMiddleware");
+
+const router = express.Router();
+router.get("/", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN), controller.listAll);
+router.get("/current", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER, ROLES.WARDEN), tenantMiddleware, requireTenant, controller.getCurrent);
+router.patch("/current", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN, ROLES.OWNER), tenantMiddleware, requireTenant, controller.updateCurrent);
+router.post("/current/access-code/rotate", requireAuth, requireRoles(ROLES.OWNER), tenantMiddleware, requireTenant, controller.rotateAccessCode);
+router.get("/public", controller.listPublic);
+router.get("/:id", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN), controller.getById);
+router.patch("/:id", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN), controller.updateById);
+router.patch("/:id/status", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN), controller.setStatus);
+router.delete("/:id", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN), controller.archiveById);
+router.post("/:id/restore", requireAuth, requireRoles(ROLES.SYSTEM_ADMIN), controller.restoreById);
+
+module.exports = router;
+

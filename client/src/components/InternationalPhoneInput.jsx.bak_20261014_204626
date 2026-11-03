@@ -1,0 +1,85 @@
+import { useEffect, useState } from "react";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+
+const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+
+export const isValidInternationalPhone = (value) => {
+  const raw = String(value ?? "").trim();
+  const digits = digitsOnly(raw);
+  return raw.startsWith("+") && /^[1-9]\d{7,14}$/.test(digits);
+};
+
+const widgetValue = (value) => {
+  const raw = String(value ?? "").trim();
+  const digits = digitsOnly(raw);
+
+  // Treat legacy ten-digit local numbers as Indian numbers.
+  if (/^\d{10}$/.test(raw)) return `91${digits}`;
+  return digits;
+};
+
+function InternationalPhoneInput({
+  value,
+  onChange,
+  label = "Mobile number",
+  name = "mobile",
+  required = false,
+  disabled = false
+}) {
+  const [selectedCountry, setSelectedCountry] = useState("in");
+
+  useEffect(() => {
+    const raw = String(value ?? "").trim();
+    if (/^\d{10}$/.test(raw)) {
+      onChange(`+91${digitsOnly(raw)}`);
+    }
+  }, []);
+
+  return (
+    <PhoneInput
+      country={selectedCountry}
+      value={widgetValue(value)}
+      onChange={(rawValue, countryData) => {
+        const countryCode = countryData?.countryCode || selectedCountry;
+        const dialCode = digitsOnly(countryData?.dialCode);
+        const digits = digitsOnly(rawValue);
+
+        setSelectedCountry(countryCode);
+        onChange(digits.length > dialCode.length ? `+${digits}` : "");
+      }}
+      enableSearch
+      searchPlaceholder="Search country or calling code"
+      countryCodeEditable={false}
+      enableAreaCodes={false}
+      preferredCountries={["in", "us", "gb", "ca", "au", "ae"]}
+      specialLabel=""
+      disabled={disabled}
+      containerClass="international-phone"
+      inputClass="international-phone-input"
+      buttonClass="international-phone-flag"
+      inputProps={{
+        name,
+        required,
+        disabled,
+        autoComplete: "tel",
+        "aria-label": label,
+        placeholder: "Enter mobile number"
+      }}
+      inputStyle={{
+        width: "100%",
+        height: "44px",
+        paddingLeft: "52px",
+        borderRadius: "10px",
+        boxSizing: "border-box"
+      }}
+      buttonStyle={{
+        borderTopLeftRadius: "10px",
+        borderBottomLeftRadius: "10px"
+      }}
+      dropdownStyle={{ zIndex: 2000 }}
+    />
+  );
+}
+
+export default InternationalPhoneInput;

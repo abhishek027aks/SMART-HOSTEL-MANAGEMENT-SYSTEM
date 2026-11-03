@@ -1,0 +1,854 @@
+import {
+  Bed,
+  Bell,
+  Building2,
+  ClipboardList,
+  DoorOpen,
+  Home,
+  MessageSquareWarning,
+  RefreshCw,
+  ScanLine,
+  UserCog,
+  Users, CreditCard, FileBarChart, ShieldAlert } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useAuth } from "./context/AuthContext.jsx";
+import Login from "./pages/Login.jsx";
+
+
+import FacilityOverview from "./components/FacilityOverview.jsx";
+import { apiRequest } from "./services/api.js";
+import AuthenticatedPhoto from "./components/AuthenticatedPhoto.jsx";
+import OwnerProfileEditor from "./components/OwnerProfileEditor.jsx";
+
+const StudentQrPage = lazy(() => import("./pages/StudentQrPage.jsx"));
+const GateScannerPage = lazy(() => import("./pages/GateScannerPage.jsx"));
+const ParentPortalPage = lazy(() => import("./pages/ParentPortalPage.jsx"));
+const PaymentManagement = lazy(() => import("./pages/PaymentManagement.jsx"));
+const FacilityManager = lazy(() => import("./pages/FacilityManager.jsx"));
+const StudentManagement = lazy(() => import("./pages/StudentManagement.jsx"));
+const AllocationManager = lazy(() => import("./pages/AllocationManager.jsx"));
+const HostelManagement = lazy(() => import("./pages/HostelManagement.jsx"));
+const StaffManagement = lazy(() => import("./pages/StaffManagement.jsx"));
+const ParentManagement = lazy(() => import("./pages/ParentManagement.jsx"));
+const OutpassPage = lazy(() => import("./pages/OutpassPage.jsx"));
+const ComplaintPage = lazy(() => import("./pages/ComplaintPage.jsx"));
+const HelpContactsPage = lazy(() => import("./pages/HelpContactsPage.jsx"));
+const NoticesPage = lazy(() => import("./pages/NoticesPage.jsx"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage.jsx"));
+const MessPage = lazy(() => import("./pages/MessPage.jsx"));
+const ReportsPage = lazy(() => import("./pages/ReportsPage.jsx"));
+const AuditLogsPage = lazy(() => import("./pages/AuditLogsPage.jsx"));
+const SecurityPage = lazy(() => import("./pages/SecurityPage.jsx"));
+
+const DASHBOARD_ROLES = ["SYSTEM_ADMIN", "OWNER", "WARDEN"];
+const ALL_HOSTELS_VALUE = "__ALL_HOSTELS__";
+const REQUIRED_COUNTS = [
+  "totalStudents",
+  "activeStudents",
+  "totalRooms",
+  "vacantRooms",
+  "totalBeds",
+  "occupiedBeds",
+  "vacantBeds",
+  "reservedBeds",
+  "maintenanceBeds",
+  "todayEntry",
+  "todayExit",
+  "pendingOutpasses",
+  "openComplaints"
+];
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  hour: "2-digit",
+  minute: "2-digit"
+});
+
+function App() {
+  const { user, token, logout, updateUser, selectedHostelId: activeHostelId, setSelectedHostelId: setActiveHostelId } = useAuth();
+  const [summary, setSummary] = useState(null);
+  const [hostelInfo, setHostelInfo] = useState(null);
+  const [status, setStatus] = useState("loading");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  const [rangeDays, setRangeDays] = useState(7);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState("");
+  const hasSummaryRef = useRef(false);
+  const requestInProgressRef = useRef(false);
+  const [section, setSection] = useState("dashboard");
+  const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
+  const [allocationStudentId, setAllocationStudentId] = useState("");
+  const [registerAfterSignOut, setRegisterAfterSignOut] = useState(false);
+  const [editingOwnerProfile, setEditingOwnerProfile] = useState(false);
+  const [accessibleHostels, setAccessibleHostels] = useState([]);
+  const [hostelListError, setHostelListError] = useState("");
+
+  useEffect(() => {
+    if (
+      !token ||
+      !["OWNER", "WARDEN"].includes(user?.role) ||
+      activeHostelId === ALL_HOSTELS_VALUE
+    ) {
+      setNotificationUnreadCount(0);
+      return undefined;
+    }
+
+    let active = true;
+    const controller = new AbortController();
+
+    const refreshUnreadCount = async () => {
+      try {
+        const response = await apiRequest("/api/notifications", {
+          token,
+          signal: controller.signal
+        });
+
+        if (active) {
+          setNotificationUnreadCount(
+            Math.max(0, Number(response?.data?.unreadCount) || 0)
+          );
+        }
+      } catch (requestError) {
+        if (active && requestError.name !== "AbortError") {
+          // Keep the last known count if a temporary request fails.
+        }
+      }
+    };
+
+    void refreshUnreadCount();
+
+    const intervalId = window.setInterval(() => {
+      void refreshUnreadCount();
+    }, 15000);
+
+    return () => {
+      active = false;
+      controller.abort();
+      window.clearInterval(intervalId);
+    };
+  }, [token, user?.role, activeHostelId]);
+
+  useEffect(() => {
+    hasSummaryRef.current = false;
+    requestInProgressRef.current = false;
+    setSummary(null);
+    setLastUpdated(null);
+    setRefreshing(false);
+    setRefreshError("");
+    setErrorMessage("");
+    setAccessibleHostels([]);
+    setHostelListError("");
+  }, [token, user?.role]);
+  useEffect(() => {
+    if (!token || !DASHBOARD_ROLES.includes(user?.role)) {
+      setAccessibleHostels([]);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+
+    apiRequest("/api/auth/hostels", { token, signal: controller.signal })
+      .then((payload) => {
+        if (!active) return;
+
+        const items = Array.isArray(payload?.data?.items)
+          ? payload.data.items.filter((h) =>
+              h && typeof h._id === "string" && typeof h.name === "string"
+            )
+          : [];
+
+        setAccessibleHostels(items);
+        setHostelListError("");
+
+        const isAdmin = user.role === "SYSTEM_ADMIN";
+        const selectedAllowed = isAdmin
+          ? activeHostelId === ALL_HOSTELS_VALUE ||
+            items.some((h) => h._id === activeHostelId)
+          : items.some((h) => h._id === activeHostelId);
+
+        if (!selectedAllowed) {
+          setActiveHostelId(
+            isAdmin
+              ? ALL_HOSTELS_VALUE
+              : items.find((h) => h._id === user.hostelId)?._id || items[0]?._id || ""
+          );
+        }
+      })
+      .catch((error) => {
+        if (active && error.name !== "AbortError") {
+          setHostelListError(error.message || "Unable to load accessible hostels.");
+        }
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [token, user?.role, user?.hostelId, activeHostelId, setActiveHostelId]);
+
+  useEffect(() => {
+    if (!token || !DASHBOARD_ROLES.includes(user?.role)) {
+      setStatus("restricted");
+      return undefined;
+    }
+
+    if (!hasSummaryRef.current) {
+      setStatus("loading");
+      setErrorMessage("");
+    } else {
+      setRefreshing(true);
+      setRefreshError("");
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    requestInProgressRef.current = true;
+
+    const loadSummary = async () => {
+      try {
+        const payload = await apiRequest(`/api/dashboard/summary?rangeDays=${rangeDays}`, {
+          token,
+          signal: controller.signal
+        });
+
+        if (!payload?.data?.counts ||
+            REQUIRED_COUNTS.some((key) => !Number.isFinite(payload.data.counts[key])) ||
+            !Array.isArray(payload.data.recentStudents) ||
+            !Array.isArray(payload.data.recentEntryExit) ||
+            !Array.isArray(payload.data.recentComplaints)) {
+          throw new Error("The dashboard response was incomplete. Retry or contact support.");
+        }
+
+        if (
+          payload.data.analytics?.rangeDays !== rangeDays ||
+          !Array.isArray(payload.data.analytics?.dailyGateActivity) ||
+          payload.data.analytics.dailyGateActivity.length !== rangeDays ||
+          !payload.data.analytics.dailyGateActivity.every((point) =>
+            point && /^\d{4}-\d{2}-\d{2}$/.test(point.date) &&
+            Number.isFinite(point.entries) && Number.isFinite(point.exits) &&
+            point.entries >= 0 && point.exits >= 0
+          )
+        ) {
+          throw new Error("Dashboard trend response was incomplete. Retry or contact support.");
+        }
+
+        if (!active) return;
+
+        hasSummaryRef.current = true;
+        setSummary(payload.data);
+        setLastUpdated(new Date());
+        setRefreshError("");
+        setErrorMessage("");
+        setStatus("ready");
+      } catch (error) {
+        if (error.name !== "AbortError" && active) {
+          if (error.status === 401) {
+            logout();
+          } else if (hasSummaryRef.current) {
+            setRefreshError(error.message || "Dashboard refresh failed. Showing the last successful data.");
+          } else {
+            setErrorMessage(error.message || "Unable to load dashboard records.");
+            setStatus("error");
+          }
+        }
+      } finally {
+        if (active) {
+          requestInProgressRef.current = false;
+          setRefreshing(false);
+        }
+      }
+    };
+
+    loadSummary();
+
+    return () => {
+      active = false;
+      controller.abort();
+      requestInProgressRef.current = false;
+    };
+  }, [token, user?.role, logout, reloadKey, rangeDays, activeHostelId]);
+
+  useEffect(() => {
+    if (!token || !DASHBOARD_ROLES.includes(user?.role) || section !== "dashboard") {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (!requestInProgressRef.current) {
+        setReloadKey((key) => key + 1);
+      }
+    }, 60_000);
+
+    return () => window.clearInterval(intervalId);
+  }, [token, user?.role, section, activeHostelId]);
+  useEffect(() => {
+    const supportedRole = ["SYSTEM_ADMIN", "OWNER", "WARDEN"].includes(user?.role);
+    if (
+      !token ||
+      !supportedRole ||
+      !activeHostelId ||
+      activeHostelId === ALL_HOSTELS_VALUE
+    ) {
+      setHostelInfo(null);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    apiRequest("/api/hostels/current", { token, signal: controller.signal })
+      .then((response) => setHostelInfo(response.data))
+      .catch((error) => {
+        if (error.name !== "AbortError") setHostelInfo(null);
+      });
+
+    return () => controller.abort();
+  }, [token, user?.role, activeHostelId, reloadKey]);
+
+  if (!user) {
+    return <Login initialMode={registerAfterSignOut ? "register" : "login"} onRegistrationStart={() => setRegisterAfterSignOut(false)} />;
+  }
+
+  if (user.role === "STUDENT") {
+    return (<Suspense fallback={<main className="auth-page qr-page"><section className="auth-card">Loading student QR...</section></main>}><StudentQrPage token={token} logout={logout} /></Suspense>);
+  }
+
+  if (user.role === "GUARD") {
+    return (<Suspense fallback={<main className="auth-page qr-page"><section className="auth-card">Loading gate scanner...</section></main>}><GateScannerPage token={token} logout={logout} /></Suspense>);
+  }
+
+  if (user.role === "PARENT") {
+    return (
+      <Suspense fallback={<main className="auth-page"><section className="auth-card">Loading family portal...</section></main>}>
+        <ParentPortalPage token={token} logout={logout} />
+      </Suspense>
+    );
+  }
+  if (!DASHBOARD_ROLES.includes(user.role)) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card access-card">
+          <div className="auth-brand-mark"><Home size={28} aria-hidden="true" /></div>
+          <h1>Dashboard Not Available</h1>
+          <p className="auth-description">
+            Your {user.role.replaceAll("_", " ").toLowerCase()} account is active, but this dashboard is limited to hostel administrators and wardens.
+          </p>
+          <button className="auth-submit" type="button" onClick={logout}>Sign Out</button>
+        </section>
+      </main>
+    );
+  }
+
+  if (status !== "ready" || !summary) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card access-card">
+          <h1>{status === "error" ? "Dashboard Unavailable" : "Loading Dashboard..."}</h1>
+          <p className="auth-description" role="status" aria-live="polite">
+            {status === "error" ? errorMessage : "Loading current hostel records from the server..."}
+          </p>
+          {status === "error" ? (
+            <button
+              className="auth-submit"
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
+              Retry
+            </button>
+          ) : null}
+          <button className="auth-logout" type="button" onClick={logout}>Sign Out</button>
+        </section>
+      </main>
+    );
+  }
+
+  const { counts } = summary;
+  const selectedHostelRecord = accessibleHostels.find((h) => h._id === activeHostelId) || null;
+  const persistedHostelId = activeHostelId && activeHostelId !== ALL_HOSTELS_VALUE
+    ? activeHostelId
+    : (hostelInfo?._id || user.hostelId);
+  const selectedHostelId = activeHostelId === ALL_HOSTELS_VALUE
+    ? "ALL HOSTELS"
+    : persistedHostelId
+      ? String(persistedHostelId).slice(-6).toUpperCase()
+      : "ALL HOSTELS";
+  const hasBeds = Number.isFinite(counts.totalBeds) && counts.totalBeds > 0;
+  const hasGateCounts = Number.isFinite(counts.todayEntry) && Number.isFinite(counts.todayExit);
+  const todayGateActivity = hasGateCounts ? counts.todayEntry + counts.todayExit : null;
+  const occupancyPercent = hasBeds && Number.isFinite(counts.occupiedBeds)
+    ? Math.round((counts.occupiedBeds / counts.totalBeds) * 100)
+    : 0;
+  const displayCount = (value) => Number.isFinite(value) ? value : "-";
+  const gateTrend = Array.isArray(summary?.analytics?.dailyGateActivity)
+    ? summary.analytics.dailyGateActivity
+    : [];
+  const displayedRangeDays = summary?.analytics?.rangeDays ?? rangeDays;
+  const maxGateTrendValue = Math.max(1, ...gateTrend.map((day) => Math.max(day.entries, day.exits)));
+  const formatGateTrendDate = (value, index) => {
+    const date = new Date(`${value}T12:00:00`);
+    if (displayedRangeDays === 7) return new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(date);
+    if (index % 5 === 0 || index === gateTrend.length - 1) return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+    return "";
+  };
+  const metrics = [
+    {
+      label: "Total Students",
+      value: counts.totalStudents,
+      note: counts.totalStudents === 0 ? "No records yet" : `${displayCount(counts.activeStudents)} active`,
+      icon: Users,
+      tone: "violet"
+    },
+    {
+      label: "Total Rooms",
+      value: counts.totalRooms,
+      note: counts.totalRooms === 0 ? "No records yet" : `${displayCount(counts.vacantRooms)} vacant`,
+      icon: Bed,
+      tone: "blue"
+    },
+    {
+      label: "Today's Entry",
+      value: counts.todayEntry,
+      note: counts.todayEntry === 0 && counts.todayExit === 0
+        ? "No records yet"
+        : `${displayCount(counts.todayExit)} exits`,
+      icon: DoorOpen,
+      tone: "green"
+    },
+    {
+      label: "Pending Outpass",
+      value: counts.pendingOutpasses,
+      note: counts.pendingOutpasses === 0 ? "No records yet" : "Awaiting review",
+      icon: Building2,
+      tone: "orange"
+    }
+  ];
+
+  return (
+    <main className="app-shell">
+      <aside className="sidebar" aria-label="Primary navigation">
+        <a className="brand" href="#dashboard">
+          <span className="brand-mark"><Home size={27} aria-hidden="true" /></span>
+          <span>
+            <strong>Smart Hostel</strong>
+            <span>Management System</span>
+          </span>
+        </a>
+        <nav className="nav-list" aria-label="Dashboard navigation">
+          <button type="button" className={section === "dashboard" ? "active" : ""} aria-current={section === "dashboard" ? "page" : undefined} onClick={() => setSection("dashboard")}>
+            <Home size={17} aria-hidden="true" /> Dashboard
+          </button>
+          <button type="button" className={section === "facilities" ? "active" : ""} aria-current={section === "facilities" ? "page" : undefined} onClick={() => setSection("facilities")}>
+            <Building2 size={17} aria-hidden="true" /> Facilities
+          </button>
+          {user.role === "OWNER" ? <button type="button" className={section === "staff" ? "active" : ""} aria-current={section === "staff" ? "page" : undefined} onClick={() => setSection("staff")}>
+            <UserCog size={17} aria-hidden="true" /> Staff
+          </button> : null}
+          <button type="button" className={section === "students" ? "active" : ""} aria-current={section === "students" ? "page" : undefined} onClick={() => setSection("students")}>
+            <Users size={17} aria-hidden="true" /> Students
+          </button>
+          {user.role === "OWNER" ? <button type="button" className={section === "parents" ? "active" : ""} aria-current={section === "parents" ? "page" : undefined} onClick={() => setSection("parents")}>
+            <Users size={17} aria-hidden="true" /> Parents
+          </button> : null}
+          <button type="button" className={section === "allocation" ? "active" : ""} aria-current={section === "allocation" ? "page" : undefined} onClick={() => setSection("allocation")}>
+            <Bed size={17} aria-hidden="true" /> Allocation
+          </button>
+          {user.role === "WARDEN" ? (
+            <button type="button" className={section === "gate" ? "active" : ""} aria-current={section === "gate" ? "page" : undefined} onClick={() => setSection("gate")}>
+              <ScanLine size={17} aria-hidden="true" /> Gate Scanner
+            </button>
+          ) : null}
+          {["OWNER", "WARDEN"].includes(user.role) ? (
+            <button type="button" className={section === "outpasses" ? "active" : ""} aria-current={section === "outpasses" ? "page" : undefined} onClick={() => setSection("outpasses")}>
+              <ClipboardList size={17} aria-hidden="true" /> Outpass / Leave
+            </button>
+          ) : null}
+          {["OWNER", "WARDEN"].includes(user.role) ? (
+            <button type="button" className={section === "complaints" ? "active" : ""} aria-current={section === "complaints" ? "page" : undefined} onClick={() => setSection("complaints")}>
+              <MessageSquareWarning size={17} aria-hidden="true" /> Complaints
+            </button>
+          ) : null}
+          {["OWNER", "WARDEN"].includes(user.role) ? <button type="button" className={section === "notices" ? "active" : ""} onClick={() => setSection("notices")}><MessageSquareWarning size={17} aria-hidden="true" /> Notices</button> : null}
+          {["OWNER", "WARDEN"].includes(user.role) ? <button type="button" className={section === "mess" ? "active" : ""} onClick={() => setSection("mess")}><Bed size={17} aria-hidden="true" /> Mess Menu</button> : null}
+          {["OWNER", "WARDEN"].includes(user.role) ? (
+            <button type="button" className={section === "notifications" ? "active" : ""} aria-current={section === "notifications" ? "page" : undefined} onClick={() => setSection("notifications")}>
+              <Bell size={17} aria-hidden="true" /> <span>Notifications</span> {notificationUnreadCount > 0 ? <span className="nav-unread-badge" aria-label={`${notificationUnreadCount} unread notifications`}>{notificationUnreadCount > 99 ? "99+" : notificationUnreadCount}</span> : null}
+            </button>
+          ) : null}
+          {user.role === "OWNER" ? <button type="button" className={section === "help" ? "active" : ""} onClick={() => setSection("help")}><MessageSquareWarning size={17} aria-hidden="true" /> Help Contacts</button> : null}
+          {(user.role === "OWNER" || user.role === "WARDEN") ? (
+    <button type="button" className={section === "payments" ? "active" : ""} aria-current={section === "payments" ? "page" : undefined} onClick={() => setSection("payments")}>
+      <CreditCard size={17} aria-hidden="true" /> Fee Payments
+    </button>
+  ) : null}
+          {["OWNER", "WARDEN", "SYSTEM_ADMIN"].includes(user.role) ? <button type="button" className={section === "reports" ? "active" : ""} onClick={() => setSection("reports")}><FileBarChart size={17} aria-hidden="true" /> Reports</button> : null}
+          {["OWNER", "SYSTEM_ADMIN"].includes(user.role) ? <button type="button" className={section === "audit" ? "active" : ""} onClick={() => setSection("audit")}><ClipboardList size={17} aria-hidden="true" /> Audit Log</button> : null}
+          {["OWNER", "WARDEN", "GUARD", "SYSTEM_ADMIN"].includes(user.role) ? <button type="button" className={section === "security" ? "active" : ""} onClick={() => setSection("security")}><ShieldAlert size={17} aria-hidden="true" /> Security</button> : null}
+          {user.role === "SYSTEM_ADMIN" ? <button type="button" className={section === "hostels" ? "active" : ""} aria-current={section === "hostels" ? "page" : undefined} onClick={() => setSection("hostels")}>
+            <Building2 size={17} aria-hidden="true" /> Hostels
+          </button> : null}
+        </nav>
+      </aside>
+
+      <section className="content" id="dashboard">
+        <header className="topbar dashboard-topbar">
+          <div>
+            <span className="dashboard-kicker">HOSTEL OPERATIONS</span>
+            <h1>{section === "dashboard" ? "Dashboard" : section === "reports" ? "Reports & Exports" : section === "audit" ? "Audit Log" : section === "security" ? "Security" : section === "gate" ? "Gate Scanner" : section === "students" ? "Students" : section === "allocation" ? "Allocation" : section === "hostels" ? "Hostels" : section === "staff" ? "Staff Management" : section === "parents" ? "Parent Management" : section === "payments" ? "Fee Payments" : section === "outpasses" ? "Outpass / Leave" : section === "complaints" ? "Complaints" : section === "notices" ? "Notices" : section === "notifications" ? "Notifications" : section === "help" ? "Help Contacts" : "Facilities"}</h1>
+          </div>
+          <div className="profile-strip">
+            {user.photoUrl ? <AuthenticatedPhoto token={token} className="avatar owner-avatar" value={user.photoUrl} alt="" /> : <div className="avatar" aria-hidden="true">{user.name?.charAt(0)?.toUpperCase() || "U"}</div>}
+            <div className="profile-copy">
+              <strong>{user.name}</strong>
+              <span>{user.role.replaceAll("_", " ")}</span>
+              {activeHostelId === ALL_HOSTELS_VALUE ? (
+                <span>All active hostels</span>
+              ) : hostelInfo ? (
+                <span>{hostelInfo.name} - {hostelInfo.hostelCode || `Hostel ${selectedHostelId}`}</span>
+              ) : selectedHostelRecord ? (
+                <span>{selectedHostelRecord.name}{selectedHostelRecord.hostelCode ? ` - ${selectedHostelRecord.hostelCode}` : ""}</span>
+              ) : persistedHostelId ? (
+                <span>Hostel {selectedHostelId}</span>
+              ) : null}
+            </div>
+            {(user.role === "SYSTEM_ADMIN" || accessibleHostels.length > 1) ? (
+              <label className="hostel-switcher">
+                <span>Active Hostel</span>
+                <select
+                  aria-label="Choose active hostel workspace"
+                  value={activeHostelId || (user.role === "SYSTEM_ADMIN" ? ALL_HOSTELS_VALUE : user.hostelId || "")}
+                  onChange={(event) => {
+                    const next = event.currentTarget.value;
+                    if (!next || next === activeHostelId) return;
+
+                    setActiveHostelId(next);
+                    setHostelInfo(null);
+                    setSummary(null);
+                    hasSummaryRef.current = false;
+                    requestInProgressRef.current = false;
+                    setLastUpdated(null);
+                    setRefreshError("");
+                    setErrorMessage("");
+                    setStatus("loading");
+                    setSection("dashboard");
+                  }}
+                >
+                  {user.role === "SYSTEM_ADMIN" ? (
+                    <option value={ALL_HOSTELS_VALUE}>All Hostels</option>
+                  ) : null}
+                  {accessibleHostels.map((hostel) => (
+                    <option key={hostel._id} value={hostel._id}>
+                      {hostel.name}{hostel.city ? ` — ${hostel.city}` : ""}
+                    </option>
+                  ))}
+                </select>
+                {hostelListError ? <small className="hostel-switcher-error" role="status">{hostelListError}</small> : null}
+              </label>
+            ) : null}
+            {user.role === "OWNER" ? <button className="auth-logout" type="button" onClick={() => setEditingOwnerProfile((visible) => !visible)}>{editingOwnerProfile ? "Close profile" : "Edit profile"}</button> : null}
+            <button className="auth-logout" type="button" onClick={logout}>Sign Out</button>
+          </div>
+        </header>
+        {editingOwnerProfile && user.role === "OWNER" ? <OwnerProfileEditor token={token} user={user} onClose={() => setEditingOwnerProfile(false)} onSaved={updateUser} /> : null}
+
+        <Suspense fallback={<section className="facility-panel facility-state" role="status">Loading workspace...</section>}>
+        {section === "dashboard" ? (<>
+        <div className="dashboard-refresh-row" aria-label="Dashboard refresh controls">
+        <div className="dashboard-range-control" role="group" aria-label="Gate activity trend range">
+          <span>Trend range</span>
+          <button type="button" className={rangeDays === 7 ? "active" : ""} aria-pressed={rangeDays === 7} onClick={() => setRangeDays(7)}>7 Days</button>
+          <button type="button" className={rangeDays === 30 ? "active" : ""} aria-pressed={rangeDays === 30} onClick={() => setRangeDays(30)}>30 Days</button>
+        </div>
+          <div className="dashboard-refresh-copy" aria-live="polite">
+            <span>
+              {refreshing
+                ? "Refreshing dashboard..."
+                : lastUpdated
+                  ? `Last updated ${lastUpdated.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`
+                  : "Dashboard update pending"}
+            </span>
+            {refreshError ? <p role="status">{refreshError}</p> : null}
+          </div>
+          <button
+            className="dashboard-refresh-button"
+            type="button"
+            onClick={() => setReloadKey((key) => key + 1)}
+            disabled={refreshing || status !== "ready"}
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            {refreshing ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
+        <section className="hero-strip" aria-label="Current hostel overview">
+          <div className="hero-copy">
+            <span className="section-badge">LIVE HOSTEL OVERVIEW</span>
+            <h2>Your hostel operations, backed by current records.</h2>
+            <div className="badge-row">
+              <span className="hostel-chip">Hostel ID: {selectedHostelId}</span>
+              {hostelInfo?.hostelCode ? <span className="hostel-chip">Code: {hostelInfo.hostelCode}</span> : null}
+              <span className="hostel-chip subtle">{user.role.replaceAll("_", " ")}</span>
+              <span className="hostel-chip subtle">{displayCount(counts.totalStudents)} residents</span>
+            </div>
+          </div>
+          <div className="hostel-summary-card">
+            <SummaryRow label="Active students" value={displayCount(counts.activeStudents)} />
+            <SummaryRow label="Open complaints" value={displayCount(counts.openComplaints)} />
+            <SummaryRow label="Bed occupancy" value={hasBeds ? `${occupancyPercent}%` : "No records yet"} />
+          </div>
+        </section>
+
+        <section className="metrics-grid" aria-label="Database dashboard metrics">
+          {metrics.map(({ label, value, note, icon: Icon, tone }) => (
+            <article className={`metric-card ${tone}`} key={label}>
+              <div>
+                <span>{label}</span>
+                <strong>{displayCount(value)}</strong>
+                <small>{note}</small>
+              </div>
+              <Icon size={30} aria-hidden="true" />
+            </article>
+          ))}
+        </section>
+
+        <section className="operations-grid" aria-label="Current hostel operations">
+          <article className="mini-panel">
+            <div className="mini-panel-header">
+              <span>Bed Occupancy</span>
+              <strong>{hasBeds ? `${occupancyPercent}%` : "0%"}</strong>
+            </div>
+            <div
+              className="bar-track"
+              role="progressbar"
+              aria-label="Bed occupancy"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={occupancyPercent}
+            >
+              <i style={{ width: `${occupancyPercent}%` }} />
+            </div>
+            <small>{displayCount(counts.occupiedBeds)} occupied / {displayCount(counts.totalBeds)} beds</small>
+            {!hasBeds ? <small>No records yet</small> : null}
+          </article>
+
+          <article className="mini-panel">
+            <div className="mini-panel-header">
+              <span>Today's Gate Activity</span>
+              <strong>{displayCount(todayGateActivity)}</strong>
+            </div>
+            <div className="legend-inline">
+              <span><b className="dot blue" />{displayCount(counts.todayEntry)} entries</span>
+              <span><b className="dot amber" />{displayCount(counts.todayExit)} exits</span>
+            </div>
+            {counts.todayEntry === 0 && counts.todayExit === 0 ? <small>No records yet</small> : null}
+          </article>
+
+          <article className="mini-panel">
+            <div className="mini-panel-header">
+              <span>Support Requests</span>
+              <strong>{displayCount(counts.openComplaints)}</strong>
+            </div>
+            <div className="status-inline">
+              <MessageSquareWarning size={16} aria-hidden="true" />
+              <span>Unresolved complaints</span>
+            </div>
+            {counts.openComplaints === 0 ? <small>No records yet</small> : null}
+          </article>
+        </section>
+
+        {user.role === "SYSTEM_ADMIN" && (!activeHostelId || activeHostelId === ALL_HOSTELS_VALUE) ? (
+          <section className="facility-overview-select" aria-label="Select a hostel for facility overview">
+            <strong>View a hostel's occupancy and location</strong>
+            Select one hostel from the Active Hostel switcher above to load its Block, Floor, Room and Bed breakdown.
+          </section>
+        ) : activeHostelId ? (
+          <FacilityOverview token={token} hostelInfo={hostelInfo} onManage={() => setSection("facilities")} />
+        ) : null}
+
+        <section className="dashboard-grid">
+          <article className="panel wide gate-trend-panel">
+            <div className="panel-title gate-trend-title">
+              <div>
+                <h2>Gate Activity Trend</h2>
+                <span>{displayedRangeDays}-day daily entry and exit totals</span>
+              </div>
+              <div className="legend-inline gate-trend-legend">
+                <span><b className="dot blue" />Entries</span>
+                <span><b className="dot amber" />Exits</span>
+              </div>
+            </div>
+            {gateTrend.every((point) => point.entries === 0 && point.exits === 0) ? (
+              <p className="gate-trend-empty">No gate activity recorded for this period.</p>
+            ) : null}
+            <div className="gate-trend-scroll">
+              <div className="gate-trend-chart" style={{ gridTemplateColumns: `repeat(${gateTrend.length}, minmax(12px, 1fr))`, minWidth: gateTrend.length > 14 ? "560px" : "100%" }} role="img" aria-label={`Gate entries and exits over ${displayedRangeDays} days`}>
+                {gateTrend.map((point, index) => {
+                  const chartDate = new Date(`${point.date}T12:00:00`);
+                  const entryHeight = point.entries > 0 ? Math.max(4, (point.entries / maxGateTrendValue) * 100) : 2;
+                  const exitHeight = point.exits > 0 ? Math.max(4, (point.exits / maxGateTrendValue) * 100) : 2;
+                  return (
+                    <div className="gate-trend-day" key={point.date} title={`${chartDate.toLocaleDateString()}: ${point.entries} entries, ${point.exits} exits`}>
+                      <div className="gate-trend-bars" aria-hidden="true">
+                        <span className="gate-trend-bar entry" style={{ height: `${entryHeight}%` }} />
+                        <span className="gate-trend-bar exit" style={{ height: `${exitHeight}%` }} />
+                      </div>
+                      <span className="gate-trend-day-label">{formatGateTrendDate(point.date, index)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <p className="gate-trend-footnote">Each pair of bars shows recorded entries and exits for that date.</p>
+          </article>
+          <article className="panel occupancy-panel">
+            <PanelTitle title="Hostel Occupancy" />
+            <div className="occupancy-content">
+              <div
+                className="donut"
+                aria-label={hasBeds ? `${occupancyPercent}% beds occupied` : "No bed records yet"}
+                style={{
+                  background: `radial-gradient(circle, #ffffff 0 48%, transparent 49%), conic-gradient(#0d7df2 0 ${occupancyPercent}%, #dce9f8 ${occupancyPercent}% 100%)`
+                }}
+              >
+                <strong>{occupancyPercent}%</strong>
+                <span>Occupied</span>
+              </div>
+              <div className="legend-list">
+                <SummaryLegend label="Occupied" value={counts.occupiedBeds} tone="blue" />
+                <SummaryLegend label="Vacant" value={counts.vacantBeds} tone="amber" />
+                <SummaryLegend label="Maintenance" value={counts.maintenanceBeds} tone="red" />
+                <SummaryLegend label="Reserved" value={counts.reservedBeds} tone="dark" />
+                <SummaryLegend label="Total beds" value={counts.totalBeds} tone="dark" />
+              </div>
+            </div>
+            {!hasBeds ? <EmptyState text="No records yet" /> : null}
+          </article>
+
+          <article className="panel">
+            <PanelTitle title="Recent Gate Activity" />
+            <div className="activity-list">
+              {summary.recentEntryExit.length === 0 ? <EmptyState text="No records yet" /> : null}
+              {summary.recentEntryExit.map((record) => (
+                <div className="activity-row" key={record._id}>
+                  <div className="mini-avatar" aria-hidden="true">
+                    {record.studentId?.name?.charAt(0)?.toUpperCase() || "?"}
+                  </div>
+                  <div>
+                    <strong>{record.studentId?.name || "Student record unavailable"}</strong>
+                    <span>{record.studentId?.studentId || "Student ID unavailable"}</span>
+                  </div>
+                  <b className={record.type === "ENTRY" ? "in" : "out"}>{record.type}</b>
+                  <time dateTime={record.recordedAt}>
+                    {timeFormatter.format(new Date(record.recordedAt))}
+                  </time>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="panel">
+            <PanelTitle title="Recent Complaints" />
+            <div className="complaint-list">
+              {summary.recentComplaints.length === 0 ? <EmptyState text="No records yet" /> : null}
+              {summary.recentComplaints.map((complaint) => (
+                <div className="complaint-row" key={complaint._id}>
+                  <MessageSquareWarning size={18} aria-hidden="true" />
+                  <div>
+                    <strong>{complaint.title}</strong>
+                    <span>{complaint.studentId?.name || complaint.category}</span>
+                  </div>
+                  <b className={complaint.priority.toLowerCase()}>{complaint.priority}</b>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="panel wide">
+            <PanelTitle title="Recent Students" />
+            <div className="table-scroll">
+              <table>
+                <thead>
+                  <tr><th>Name</th><th>Student ID</th><th>Room</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  {summary.recentStudents.length === 0 ? (
+                    <tr><td colSpan="4">No records yet</td></tr>
+                  ) : null}
+                  {summary.recentStudents.map((student) => (
+                    <tr key={student._id}>
+                      <td>{student.name}</td>
+                      <td>{student.studentId}</td>
+                      <td>{student.roomId ? "Allocated" : "Not allocated"}</td>
+                      <td><span className="tag success">{student.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article className="panel">
+            <PanelTitle title="Room Inventory" />
+            <div className="room-summary">
+              <div><span>Total rooms</span><strong>{displayCount(counts.totalRooms)}</strong></div>
+              <div><span>Vacant rooms</span><strong>{displayCount(counts.vacantRooms)}</strong></div>
+              <div className="progress-track">
+                <i style={{
+                  width: `${counts.totalRooms ? ((counts.totalRooms - counts.vacantRooms) / counts.totalRooms) * 100 : 0}%`,
+                  background: "#0d7df2"
+                }} />
+              </div>
+              {counts.totalRooms === 0 ? <EmptyState text="No records yet" /> : null}
+            </div>
+          </article>
+
+          <article className="panel">
+            <PanelTitle title="Pending Outpasses" />
+            <div className="outpass-summary">
+              <span className="outpass-count">{displayCount(counts.pendingOutpasses)}</span>
+              <span>Awaiting review</span>
+              {counts.pendingOutpasses === 0 ? <EmptyState text="No records yet" /> : null}
+            </div>
+          </article>
+        </section>
+        </>) : section === "reports" && ["OWNER", "WARDEN", "SYSTEM_ADMIN"].includes(user.role) ? <ReportsPage token={token} /> : section === "audit" && ["OWNER", "SYSTEM_ADMIN"].includes(user.role) ? <AuditLogsPage token={token} /> : section === "security" && ["OWNER", "WARDEN", "GUARD", "SYSTEM_ADMIN"].includes(user.role) ? <SecurityPage token={token} role={user.role} /> : section === "gate" && user.role === "WARDEN" ? <Suspense fallback={<section className="panel">Loading gate scanner...</section>}><GateScannerPage token={token} embedded /></Suspense> : section === "students" ? <StudentManagement token={token} role={user.role} onAllocate={(studentId) => { setAllocationStudentId(studentId); setSection("allocation"); }} /> : section === "allocation" ? <AllocationManager token={token} initialStudentId={allocationStudentId} onComplete={() => setReloadKey((key) => key + 1)} /> : section === "hostels" && user.role === "SYSTEM_ADMIN" ? <HostelManagement token={token} onAdd={() => { if (window.confirm("Adding a hostel uses the existing owner registration workflow. You will be signed out to create the hostel and its owner account.")) { setRegisterAfterSignOut(true); logout(); } }} /> : section === "staff" && user.role === "OWNER" ? <StaffManagement token={token} /> : section === "parents" && user.role === "OWNER" ? <ParentManagement token={token} /> : section === "outpasses" && ["OWNER", "WARDEN"].includes(user.role) ? <OutpassPage token={token} role={user.role} /> : section === "complaints" && ["OWNER", "WARDEN"].includes(user.role) ? <ComplaintPage token={token} role={user.role} /> : section === "notices" && ["OWNER", "WARDEN"].includes(user.role) ? <NoticesPage token={token} role={user.role} /> : section === "mess" && ["OWNER", "WARDEN"].includes(user.role) ? <MessPage token={token} role={user.role} /> : section === "notifications" && ["OWNER", "WARDEN"].includes(user.role) ? <NotificationsPage token={token} role={user.role} /> : section === "help" && user.role === "OWNER" ? <HelpContactsPage token={token} role={user.role} /> : section === "payments" && ["OWNER", "WARDEN"].includes(user.role) ? <PaymentManagement token={token} /> : section === "facilities" && user.role === "SYSTEM_ADMIN" && (!activeHostelId || activeHostelId === ALL_HOSTELS_VALUE || !persistedHostelId) ? (
+  <section className="facility-overview-select" role="status">
+    <strong>Select one hostel first</strong>
+    Choose a specific hostel in the Active Hostel switcher before managing its facilities. Facility records cannot be changed in the All Hostels view.
+  </section>
+) : <FacilityManager token={token} role={user.role} hasTenant={Boolean(persistedHostelId)} onHostelChanged={() => setReloadKey((key) => key + 1)} />}
+        </Suspense>
+      </section>
+    </main>
+  );
+}
+
+function SummaryRow({ label, value }) {
+  return (
+    <div className="summary-row">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function SummaryLegend({ label, value, tone }) {
+  return (
+    <span>
+      <b className={`dot ${tone}`} />
+      {label}
+      <strong>{Number.isFinite(value) ? value : "-"}</strong>
+    </span>
+  );
+}
+
+function EmptyState({ text }) {
+  return <p className="empty-state">{text}</p>;
+}
+
+function PanelTitle({ title }) {
+  return (
+    <div className="panel-title">
+      <h2>{title}</h2>
+    </div>
+  );
+}
+
+export default App;
